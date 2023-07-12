@@ -21,10 +21,10 @@ import ch.unisg.ics.interactions.wot.td.security.NoSecurityScheme;
 import ch.unisg.ics.interactions.wot.td.security.SecurityScheme;
 
 public abstract class HypermediaArtifact extends Artifact {
-  private final Map<String, List<ActionAffordance>> actionAffordances = new HashMap<>();
+  protected final Map<String, List<ActionAffordance>> actionAffordances = new HashMap<>();
 
-  private SecurityScheme securityScheme = new NoSecurityScheme();
-  private final Model metadata = new LinkedHashModel();
+  protected SecurityScheme securityScheme = new NoSecurityScheme();
+  protected final Model metadata = new LinkedHashModel();
 
   /**
    * Retrieves a hypermedia description of the artifact's interface. Current implementation is based
@@ -132,7 +132,7 @@ public abstract class HypermediaArtifact extends Artifact {
     return actionAffordances;
   }
 
-  private String getSemanticType() {
+  protected String getSemanticType() {
     Optional<String> semType = HypermediaArtifactRegistry.getInstance().getArtifactSemanticType(
         this.getClass().getCanonicalName());
 

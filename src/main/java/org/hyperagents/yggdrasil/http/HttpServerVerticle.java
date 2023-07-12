@@ -5,6 +5,7 @@ import io.vertx.core.http.HttpServer;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.BodyHandler;
 import org.apache.http.HttpStatus;
+import org.hyperagents.yggdrasil.auth.http.WACHandler;
 
 /**
  * This verticle exposes an HTTP/1.1 interface for Yggdrasil. All requests are forwarded to a
@@ -34,6 +35,7 @@ public class HttpServerVerticle extends AbstractVerticle {
       .end("Yggdrasil v0.0"));
 
     HttpEntityHandler handler = new HttpEntityHandler(vertx);
+    WACHandler wacHandler = new WACHandler(vertx);
 
     router.get("/environments/:envid/").handler(handler::handleRedirectWithoutSlash);
     router.get("/environments/:envid").handler(handler::handleGetEntity);
@@ -58,6 +60,15 @@ public class HttpServerVerticle extends AbstractVerticle {
         .handler(handler::handleCreateArtifact);
     router.put("/environments/:envid/workspaces/:wkspid/artifacts/:artid").handler(handler::handleUpdateEntity);
     router.delete("/environments/:envid/workspaces/:wkspid/artifacts/:artid").handler(handler::handleDeleteEntity);
+    
+    // Route all paths that require representation of the access control authorizations to the WAC handler
+    // For now, we are only adding the routes for Artifact web access control and we are only serving the GET and HEAD methods
+    // TODO: add routes for environment and workspace web access control
+    // TODO: add routes for POST, PUT, DELETE methods
+    router.route("/environments/:envid/workspaces/:wkspid/artifacts/:artid/wac").handler(wacHandler::handleWACRepresentation);
+    
+
+    // route all other artifacts actions to the action handler
     router.route("/environments/:envid/workspaces/:wkspid/artifacts/:artid/*").handler(handler::handleAction);
 
     // route artifact manual requests

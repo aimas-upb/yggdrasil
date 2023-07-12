@@ -1,5 +1,6 @@
 package org.hyperagents.yggdrasil;
 
+import org.hyperagents.yggdrasil.auth.http.WACVerticle;
 import org.hyperagents.yggdrasil.cartago.CartagoVerticle;
 import org.hyperagents.yggdrasil.http.HttpServerVerticle;
 import org.hyperagents.yggdrasil.store.RdfStoreVerticle;
@@ -13,14 +14,18 @@ public class MainVerticle extends AbstractVerticle {
 
   @Override
   public void start() {
+    // Deploy the main HTTP server verticle for this Yggdrasil instance
     vertx.deployVerticle(new HttpServerVerticle(),
         new DeploymentOptions().setConfig(config())
       );
 
+    // Deploy the RDF store verticle for this Yggdrasil instance
     vertx.deployVerticle(new RdfStoreVerticle(),
         new DeploymentOptions().setWorker(true).setConfig(config())
       );
 
+    // Deploy the HTTP notification verticle that allows for modifications 
+    // to the internal state of an artifact to reflect in its RDF representation and vice versa
     vertx.deployVerticle(new HttpNotificationVerticle(),
         new DeploymentOptions().setWorker(true).setConfig(config())
       );
@@ -30,13 +35,20 @@ public class MainVerticle extends AbstractVerticle {
             "org.hyperagents.yggdrasil.cartago.artifacts.PhantomX3D")
         .put("http://example.org/Counter", "org.hyperagents.yggdrasil.cartago.artifacts.Counter")
         .put("http://example.org/SpatialCalculator2D", "org.hyperagents.yggdrasil.cartago"
-            + ".SpatialCalculator2D");
+            + ".SpatialCalculator2D")
+        .put("http://example.org/HueLamp", "org.hyperagents.yggdrasil.cartago.artifacts.AuthHue");
 
     JsonObject cartagoConfig = config();
     cartagoConfig.put("known-artifacts", knownArtifacts);
 
+    // Deploy the Cartago verticle
     vertx.deployVerticle(new CartagoVerticle(),
         new DeploymentOptions().setWorker(true).setConfig(cartagoConfig)
+      );
+    
+    // Deploy the WAC verticle
+    vertx.deployVerticle(new WACVerticle(),
+        new DeploymentOptions().setWorker(true).setConfig(config())
       );
   }
 }

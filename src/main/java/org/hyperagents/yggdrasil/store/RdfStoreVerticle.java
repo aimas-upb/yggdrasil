@@ -1,6 +1,7 @@
 package org.hyperagents.yggdrasil.store;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -10,7 +11,12 @@ import org.apache.commons.rdf.api.RDFSyntax;
 import org.apache.commons.rdf.api.Triple;
 import org.apache.commons.rdf.rdf4j.RDF4J;
 import org.apache.http.HttpStatus;
+import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.util.ModelBuilder;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
+import org.hyperagents.yggdrasil.auth.model.Authorization;
+import org.hyperagents.yggdrasil.auth.model.SharedContextAccessAuthorization;
+import org.hyperagents.yggdrasil.auth.model.SharedContextControlAuthorization;
 import org.hyperagents.yggdrasil.http.HttpEntityHandler;
 import org.hyperagents.yggdrasil.store.impl.RdfStoreFactory;
 import org.hyperagents.yggdrasil.websub.HttpNotificationVerticle;
@@ -117,6 +123,40 @@ public class RdfStoreVerticle extends AbstractVerticle {
         entityGraphStr = entityGraphStr.replaceAll("<>", "<" + entityIRIString + ">");
         entityGraph = store.stringToGraph(entityGraphStr, entityIRI, RDFSyntax.TURTLE);
 //      }
+
+      // check to see if we can extract a Shared Context Access or Control Authorization from the entity graph
+      // First create a eclipse.rdf4j.model from the org.apache.commons.rdf.api.Graph entityGraph
+      ModelBuilder builder = new ModelBuilder();
+      entityGraph.stream().forEach(triple -> builder.add(triple.getSubject().ntriplesString(),
+          triple.getPredicate().ntriplesString(), triple.getObject().ntriplesString()));
+      Model entityModel = builder.build();
+      List<Authorization> authorizations = SharedContextAccessAuthorization.fromModel(entityModel);
+      authorizations.addAll(SharedContextControlAuthorization.fromModel(entityModel));
+
+      if (!authorizations.isEmpty()) {
+        LOGGER.info("Found Shared Context Authorizations in entity graph");
+        
+        // create the document IRI by appending the path /wac to the entity IRI
+        IRI documentIRI = store.createIRI(entityIRIString + "/wac");
+
+        // create a new acl document graph by adding the authorizations to the entity graph. The graph name is the document IRI
+        Graph aclGraph = rdf.createGraph();
+        for (Authorization authorization : authorizations) {
+          // obtain the Model from the authorization
+          Model authModel = authorization.toModel().getValue();
+          
+          // convert the Model to a Graph
+          Graph authGraph = rdf.asGraph(authModel);
+
+          // add the triples from the authorization graph to the acl graph
+          authGraph.stream().forEach(triple -> aclGraph.add(triple.getSubject(), triple.getPredicate(), triple.getObject()));
+        }
+
+        // store the acl graph
+        store.createEntityGraph(documentIRI, aclGraph);
+      }
+      
+
 
       // TODO: seems like legacy integration from Simon Bienz, to be reviewed
       IRI subscribesIri = rdf.createIRI("http://w3id.org/eve#subscribes");
