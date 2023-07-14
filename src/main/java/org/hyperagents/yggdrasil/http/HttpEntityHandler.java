@@ -1,11 +1,15 @@
 package org.hyperagents.yggdrasil.http;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
-import io.vertx.core.http.HttpMethod;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpStatus;
+import org.hyperagents.yggdrasil.auth.AuthorizationRegistry;
 import org.hyperagents.yggdrasil.cartago.CartagoDataBundle;
 import org.hyperagents.yggdrasil.cartago.CartagoEntityHandler;
 import org.hyperagents.yggdrasil.cartago.CartagoVerticle;
@@ -32,6 +36,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.eventbus.ReplyException;
+import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.Json;
@@ -78,7 +83,7 @@ public class HttpEntityHandler {
     DeliveryOptions options = new DeliveryOptions()
         .addHeader(REQUEST_METHOD, RdfStore.GET_ENTITY)
         .addHeader(REQUEST_URI, entityIRI);
-
+ 
     Map<String,List<String>> headers = getHeaders(entityIRI);
 
     vertx.eventBus().request(RdfStore.BUS_ADDRESS, null, options,
@@ -298,10 +303,25 @@ public class HttpEntityHandler {
   }
 
   private Map<String, List<String>> getHeaders(String entityIRI) {
-
+    // Check for the WebSub headers
     Map<String,List<String>> headers = getWebSubHeaders(entityIRI);
-    headers.putAll(getCORSHeaders());
+    
+    // check if the entityIRI has Shared Context Authorizations, and if so add the rel=acl header
+    headers.putAll(getACLHeaders(entityIRI)); 
 
+    // in the end add all cors headers
+    headers.putAll(getCORSHeaders());
+    return headers;
+  }
+
+  private Map<String, List<String>> getACLHeaders(String entityIRI) {
+    Map<String,List<String>> headers = new HashMap<>();
+
+    // check if the entityIRI has Shared Context Authorizations, and if so add the rel=acl header pointing to the URI of the Web Access Control ACL
+    Optional<String> aclDocumentURI = AuthorizationRegistry.getInstance().getAuthorisationDocumentURI(entityIRI);
+    if (aclDocumentURI.isPresent()) {
+      headers.put("Link", Arrays.asList("<" + aclDocumentURI.get() + ">; rel=\"acl\""));
+    }
     return headers;
   }
 

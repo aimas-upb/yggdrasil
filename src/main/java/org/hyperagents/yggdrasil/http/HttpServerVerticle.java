@@ -67,9 +67,17 @@ public class HttpServerVerticle extends AbstractVerticle {
     // TODO: add routes for POST, PUT, DELETE methods
     router.route("/environments/:envid/workspaces/:wkspid/artifacts/:artid/wac").handler(wacHandler::handleWACRepresentation);
     
+    // route all artifact action first through a WAC filter to check if the agent is authorized to perform the action
+    Router wacRouter = Router.router(vertx);
+    wacRouter.route("/environments/:envid/workspaces/:wkspid/artifacts/:artid/*").handler(wacHandler::filterAccess);
 
-    // route all other artifacts actions to the action handler
-    router.route("/environments/:envid/workspaces/:wkspid/artifacts/:artid/*").handler(handler::handleAction);
+    Router artifactActionRouter = Router.router(vertx);
+    artifactActionRouter.route("/*").handler(handler::handleAction);
+
+    // make the action router a subrouter of the WAC router to handle the artifact actions after the WAC filter
+    wacRouter.mountSubRouter("/", artifactActionRouter);
+
+    //router.route("/environments/:envid/workspaces/:wkspid/artifacts/:artid/*").handler(handler::handleAction);
 
     // route artifact manual requests
     // TODO: this feature was implemented for the WWW2020 demo, a manual is any RDF graph
