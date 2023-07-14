@@ -1,12 +1,17 @@
 package org.hyperagents.yggdrasil.auth.http;
 
+import org.hyperagents.yggdrasil.auth.model.AuthorizationAccessType;
+
 import io.vertx.core.AbstractVerticle;
+import io.vertx.core.eventbus.EventBus;
+import io.vertx.core.eventbus.Message;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
 public class WACVerticle extends AbstractVerticle {
     public static final String BUS_ADDRESS = "org.hyperagents.yggdrasil.eventbus.wac";
-
+    
+    // WAC methods
     public static final String GET_WAC_RESOURCE = "org.hyperagents.yggdrasil.eventbus.headers.methods"
         + ".getWacResource";
     public static final String ADD_AUTHORIZATION = "org.hyperagents.yggdrasil.eventbus.headers.methods"
@@ -16,10 +21,48 @@ public class WACVerticle extends AbstractVerticle {
     public static final String VALIDATE_AUTHORIZATION = "org.hyperagents.yggdrasil.eventbus.headers.methods"
         + ".validateAuthorization";
 
+    // keys for the headers of the event bus messages
+    public static final String WAC_METHOD = "org.hyperagents.yggdrasil.eventbus.headers.wacMethod";
+    public static final String ACCESSED_RESOURCE_URI = "org.hyperagents.yggdrasil.eventbus.headers.accessedResourceUri";
+    public static final String ACCESS_TYPE = "org.hyperagents.yggdrasil.eventbus.headers.accessType";
+    public static final String AGENT_WEBID = "org.hyperagents.yggdrasil.eventbus.headers.agentWebId";
+    public static final String AGENT_NAME = "org.hyperagents.yggdrasil.eventbus.headers.agentName";
+    
     private static final Logger LOGGER = LoggerFactory.getLogger(WACVerticle.class.getName());
         
     @Override
     public void start() {
-        //TODO add the code to start the verticle
+        //register the event bus handlers
+        EventBus eventBus = vertx.eventBus();
+        eventBus.consumer(BUS_ADDRESS, this::handleWACRequest);
+    }
+
+    private void handleWACRequest(Message<String> message) {
+        LOGGER.info("Handling WAC Request...");
+        String wacMethod = message.headers().get(WAC_METHOD);
+         
+        switch (wacMethod) {
+            case VALIDATE_AUTHORIZATION:
+                LOGGER.info("Handling WAC Authorization validation action...");
+                validateAuthorization(message);
+                break;
+            case GET_WAC_RESOURCE:
+            case ADD_AUTHORIZATION:
+            case REMOVE_AUTHORIZATION:
+                throw new UnsupportedOperationException("Not implemented yet");
+        }
+    }
+
+    private void validateAuthorization(Message<String> message) {
+        String agentWebId = message.headers().get(AGENT_WEBID);
+        String accessedResourceUri = message.headers().get(ACCESSED_RESOURCE_URI);
+        AuthorizationAccessType accessType = AuthorizationAccessType.valueOf(message.headers().get(ACCESS_TYPE));
+        LOGGER.info("Validating Authorization for agent " + agentWebId + " to access resource " + accessedResourceUri + " in mode " + accessType);
+        
+        // TODO: implement the authorization validation via a federated SPARQL query that comprises the local RDFstore and the SPARQL endpoint of the
+        // ContextDomainGroup indicated as entityURI in the SharedContextAccessAuthorization
+
+        // by default, we allow access
+        message.reply(true);
     }
 }
