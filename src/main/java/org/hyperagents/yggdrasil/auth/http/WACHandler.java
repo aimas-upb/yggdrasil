@@ -4,7 +4,7 @@ import java.util.Optional;
 
 import org.apache.http.HttpStatus;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
-import org.hyperagents.yggdrasil.auth.http.org.hyperagents.yggdrasil.auth.AuthorizationRegistry;
+import org.hyperagents.yggdrasil.auth.AuthorizationRegistry;
 import org.hyperagents.yggdrasil.auth.model.AuthorizationAccessType;
 import org.hyperagents.yggdrasil.http.HttpEntityHandler;
 import org.hyperagents.yggdrasil.http.HttpInterfaceConfig;
