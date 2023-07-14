@@ -3,13 +3,11 @@ package org.hyperagents.yggdrasil.auth.http;
 import java.util.Optional;
 
 import org.apache.http.HttpStatus;
-import org.eclipse.rdf4j.model.vocabulary.RDFS;
 import org.hyperagents.yggdrasil.auth.AuthorizationRegistry;
 import org.hyperagents.yggdrasil.auth.model.AuthorizationAccessType;
 import org.hyperagents.yggdrasil.http.HttpEntityHandler;
 import org.hyperagents.yggdrasil.http.HttpInterfaceConfig;
 import org.hyperagents.yggdrasil.store.RdfStore;
-import org.hyperagents.yggdrasil.store.RdfStoreVerticle;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.DeliveryOptions;
