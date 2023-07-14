@@ -14,7 +14,7 @@ import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.util.ModelBuilder;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
-import org.hyperagents.yggdrasil.auth.http.org.hyperagents.yggdrasil.auth.AuthorisationRegistry;
+import org.hyperagents.yggdrasil.auth.http.org.hyperagents.yggdrasil.auth.AuthorizationRegistry;
 import org.hyperagents.yggdrasil.auth.model.AuthorizationAccessType;
 import org.hyperagents.yggdrasil.auth.model.SharedContextAccessAuthorization;
 import org.hyperagents.yggdrasil.cartago.ContextAuthHypermediaArtifact;
@@ -142,7 +142,7 @@ public class AuthHue extends ContextAuthHypermediaArtifact {
           AuthorizationAccessType.WRITE, PREFIX + "Lab308ContextDomainGroup");    
     
     // add the read and write SharedContextAccessAuthorisation object to the AuthorisationRegistry
-    AuthorisationRegistry authRegistry = AuthorisationRegistry.getInstance();
+    AuthorizationRegistry authRegistry = AuthorizationRegistry.getInstance();
     authRegistry.addSharedContextAccessAuthorisation(getArtifactUri(), readAccessAuth);
     authRegistry.addSharedContextAccessAuthorisation(getArtifactUri(), writeAccessAuth);
   }

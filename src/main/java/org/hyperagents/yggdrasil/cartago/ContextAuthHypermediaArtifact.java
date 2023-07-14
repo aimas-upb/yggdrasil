@@ -6,10 +6,10 @@ import java.util.List;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.util.ModelBuilder;
-import org.hyperagents.yggdrasil.auth.CASHMERE;
 import org.hyperagents.yggdrasil.auth.model.Authorization;
 import org.hyperagents.yggdrasil.auth.model.AuthorizationAccessType;
 import org.hyperagents.yggdrasil.auth.model.AuthorizedEntityType;
+import org.hyperagents.yggdrasil.auth.model.CASHMERE;
 
 import cartago.CartagoException;
 import ch.unisg.ics.interactions.wot.td.ThingDescription;
