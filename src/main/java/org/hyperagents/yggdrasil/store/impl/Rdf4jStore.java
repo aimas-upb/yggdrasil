@@ -35,7 +35,7 @@ import org.eclipse.rdf4j.rio.helpers.StatementCollector;
 import org.eclipse.rdf4j.sail.memory.MemoryStore;
 import org.eclipse.rdf4j.sail.nativerdf.NativeStore;
 import org.hyperagents.yggdrasil.store.RdfStore;
-import org.hyperagents.yggdrasil.store.RdfStoreVerticle;
+
 
 public class Rdf4jStore implements RdfStore {
   private final static Logger LOGGER = LoggerFactory.getLogger(RdfStore.class.getName());
