@@ -158,7 +158,7 @@ public class RdfStoreVerticle extends AbstractVerticle {
         Graph aclGraph = rdf.createGraph();
         for (Authorization authorization : allAuthorizations) {
           // obtain the Model from the authorization
-          Model authModel = authorization.toModel().getValue();
+          Model authModel = authorization.toModel().values().iterator().next();
           
           // convert the Model to a Graph
           Graph authGraph = rdf.asGraph(authModel);

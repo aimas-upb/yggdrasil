@@ -2,6 +2,7 @@ package org.hyperagents.yggdrasil.cartago;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
@@ -15,7 +16,7 @@ import cartago.CartagoException;
 import ch.unisg.ics.interactions.wot.td.ThingDescription;
 import ch.unisg.ics.interactions.wot.td.affordances.ActionAffordance;
 import ch.unisg.ics.interactions.wot.td.io.TDGraphWriter;
-import javafx.util.Pair;
+
 
 public abstract class ContextAuthHypermediaArtifact extends HypermediaArtifact {
   
@@ -82,16 +83,18 @@ public abstract class ContextAuthHypermediaArtifact extends HypermediaArtifact {
         // TODO: Redefine the Authorization class to use the CASHMERE ontology
         ModelBuilder authorisationsModel = new ModelBuilder();
         for (Authorization auth : getAuthorizations()) {
-          Pair<IRI, Model> authTriples = auth.toModel();
+          Map<IRI, Model> authTriples = auth.toModel();
           if (auth.getAccessType() == AuthorizationAccessType.CONTROL){
-            // If the access type is control, we add the hasControlAuthorization property
-            authorisationsModel.add(getArtifactUri(), CASHMERE.hasControlAuthorization, authTriples.getKey());  
+            // If the access type is control, we add the hasControlAuthorization property. We use authTriples.keySet().iterator().next() because
+            // we know that the authTriples map contains only one entry
+            authorisationsModel.add(getArtifactUri(), CASHMERE.hasControlAuthorization, authTriples.keySet().iterator().next());  
           }
           else {
             // Otherwise, we add the hasAccessAuthorization property
-            authorisationsModel.add(getArtifactUri(), CASHMERE.hasAccessAuthorization, authTriples.getKey());
+            authorisationsModel.add(getArtifactUri(), CASHMERE.hasAccessAuthorization, authTriples.keySet().iterator().next());
           }
-          tdBuilder.addGraph(authTriples.getValue());
+          // We can write this line because we know that the authTriples map contains only one entry
+          tdBuilder.addGraph(authTriples.values().iterator().next());
         }
         tdBuilder.addGraph(authorisationsModel.build());
         

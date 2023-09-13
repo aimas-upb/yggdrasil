@@ -1,7 +1,7 @@
 plugins {
   id 'application'
   id 'eclipse'
-  id 'com.github.johnrengelman.shadow' version '5.1.0'
+  id 'com.github.johnrengelman.shadow' version '7.0.0'
 }
 
 defaultTasks 'shadowJar'
@@ -24,33 +24,33 @@ def watchForChange = 'src/**/*'
 def doOnChange = './gradlew classes'
 
 dependencies {
-  compile "io.vertx:vertx-core:$vertxVersion"
-  compile "io.vertx:vertx-config:$vertxVersion"
-  compile "io.vertx:vertx-web:$vertxVersion"
-  compile "io.vertx:vertx-web-api-contract:$vertxVersion"
-  compile "io.vertx:vertx-web-client:$vertxVersion"
-  compile "io.github.classgraph:classgraph:4.4.12"
+  implementation "io.vertx:vertx-core:$vertxVersion"
+  implementation "io.vertx:vertx-config:$vertxVersion"
+  implementation "io.vertx:vertx-web:$vertxVersion"
+  implementation "io.vertx:vertx-web-api-contract:$vertxVersion"
+  implementation "io.vertx:vertx-web-client:$vertxVersion"
+  implementation "io.github.classgraph:classgraph:4.4.12"
 
   implementation 'org.apache.httpcomponents.client5:httpclient5:5.0.1'
   implementation 'org.apache.httpcomponents.client5:httpclient5-fluent:5.0.1'
 
-  compile name: "cartago", version: "2.5-SNAPSHOT"
-  compile name: "wot-td-java", version: "0.0.1"
+  implementation name: "cartago", version: "2.5-SNAPSHOT"
+  implementation name: "wot-td-java", version: "0.0.1"
 
   // https://mvnrepository.com/artifact/org.eclipse.rdf4j/rdf4j-model
-  compile group: 'org.eclipse.rdf4j', name: 'rdf4j-model', version: '2.4.2'
+  implementation group: 'org.eclipse.rdf4j', name: 'rdf4j-model', version: '2.4.2'
   // https://mvnrepository.com/artifact/org.eclipse.rdf4j/rdf4j-repository-sail
-  compile group: 'org.eclipse.rdf4j', name: 'rdf4j-repository-sail', version: '2.4.2'
+  implementation group: 'org.eclipse.rdf4j', name: 'rdf4j-repository-sail', version: '2.4.2'
   // https://mvnrepository.com/artifact/org.eclipse.rdf4j/rdf4j-sail-memory
-  compile group: 'org.eclipse.rdf4j', name: 'rdf4j-sail-memory', version: '2.4.2'
-  compile group: 'org.eclipse.rdf4j', name: 'rdf4j-sail-nativerdf', version: '2.4.2'
+  implementation group: 'org.eclipse.rdf4j', name: 'rdf4j-sail-memory', version: '2.4.2'
+  implementation group: 'org.eclipse.rdf4j', name: 'rdf4j-sail-nativerdf', version: '2.4.2'
 
-  compile 'org.apache.commons:commons-rdf-api:0.5.0'
-  compile 'org.apache.commons:commons-rdf-rdf4j:0.5.0'
-  compile 'com.google.code.gson:gson:2.8.6'
+  implementation 'org.apache.commons:commons-rdf-api:0.5.0'
+  implementation 'org.apache.commons:commons-rdf-rdf4j:0.5.0'
+  implementation 'com.google.code.gson:gson:2.8.6'
 
-  testCompile "junit:junit:4.12"
-  testCompile "io.vertx:vertx-unit:$vertxVersion"
+  testImplementation "junit:junit:4.12"
+  testImplementation "io.vertx:vertx-unit:$vertxVersion"
 }
 
 shadowJar {
@@ -71,4 +71,21 @@ apply plugin: 'java'
 
 compileJava {
   options.compilerArgs << '-parameters'
+}
+
+apply plugin: 'maven-publish'
+
+publishing {
+    publications {
+        customLibrary(MavenPublication) {
+            from components.java
+        }
+    }
+
+    repositories {
+        maven {
+            name = 'yggdrasil_shared_auth'
+            url = layout.buildDirectory.dir("repo")
+        }
+    }
 }

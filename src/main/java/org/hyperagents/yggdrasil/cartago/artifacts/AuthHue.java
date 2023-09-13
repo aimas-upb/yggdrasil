@@ -14,7 +14,7 @@ import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.util.ModelBuilder;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
-import org.hyperagents.yggdrasil.auth.http.org.hyperagents.yggdrasil.auth.AuthorizationRegistry;
+import org.hyperagents.yggdrasil.auth.AuthorizationRegistry;
 import org.hyperagents.yggdrasil.auth.model.AuthorizationAccessType;
 import org.hyperagents.yggdrasil.auth.model.SharedContextAccessAuthorization;
 import org.hyperagents.yggdrasil.cartago.ContextAuthHypermediaArtifact;

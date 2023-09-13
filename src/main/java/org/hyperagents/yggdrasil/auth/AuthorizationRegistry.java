@@ -1,4 +1,4 @@
-package org.hyperagents.yggdrasil.auth.http.org.hyperagents.yggdrasil.auth;
+package org.hyperagents.yggdrasil.auth;
 
 import java.util.Collections;
 import java.util.Hashtable;

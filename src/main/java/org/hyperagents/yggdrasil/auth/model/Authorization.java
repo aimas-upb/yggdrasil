@@ -1,5 +1,7 @@
 package org.hyperagents.yggdrasil.auth.model;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 import org.eclipse.rdf4j.model.BNode;
@@ -10,7 +12,7 @@ import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.util.ModelBuilder;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 
-import javafx.util.Pair;
+
 
 public class Authorization {
   private Optional<String> resourceName = Optional.empty();
@@ -94,7 +96,7 @@ public class Authorization {
 
   // Generate an RDF graph Model of this Authorization instance, using the org.eclipse.rdf4j.model.util.ModelBuilder 
   // and the corresponding ACL ontology vocabulary. Return a tuple of the authorization instance URI and the Model.
-  public Pair<IRI, Model> toModel() {
+  public Map<IRI, Model> toModel() {
     ModelBuilder builder = new ModelBuilder();
     builder.setNamespace("acl", ACL.NS);
     builder.setNamespace("rdf", RDF.NAMESPACE);
@@ -113,9 +115,8 @@ public class Authorization {
     builder.add(authInstance, rdfVals.createIRI(entityType.getProperty()), rdfVals.createIRI(entityUri));
     
     // return a tuple of the authorization instance URI and the Model
-    return new Pair<>(
-      rdfVals.createIRI(authInstance.stringValue()), 
-      builder.build());
+    return new HashMap<IRI, Model>() {{
+      put(rdfVals.createIRI(authInstance.stringValue()), builder.build());
+    }};
   }
-    
 }

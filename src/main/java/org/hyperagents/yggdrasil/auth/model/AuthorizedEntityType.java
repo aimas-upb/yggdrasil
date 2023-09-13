@@ -1,6 +1,6 @@
 package org.hyperagents.yggdrasil.auth.model;
 
-import com.github.jsonldjava.shaded.com.google.common.base.Optional;
+import java.util.Optional;
 
 public enum AuthorizedEntityType {
     AGENT("agent"),
@@ -30,6 +30,6 @@ public enum AuthorizedEntityType {
                 return Optional.of(type);
             }
         }
-        return Optional.absent();
+        return Optional.empty();
     }
 }
