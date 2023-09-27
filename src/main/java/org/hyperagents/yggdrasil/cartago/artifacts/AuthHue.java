@@ -25,7 +25,8 @@ import ch.unisg.ics.interactions.wot.td.security.NoSecurityScheme;
 
 public class AuthHue extends ContextAuthHypermediaArtifact {
 
-  private static final String PREFIX = "http://example.org/huelampdemo/";
+  private static final String EXAMPLE_PREFIX = "http://example.org/";
+  private static final String HUE_PREFIX = "http://example.org/huelampdemo/";
 
   private enum LightState {
     ON("on"),
@@ -113,19 +114,19 @@ public class AuthHue extends ContextAuthHypermediaArtifact {
   @Override
   protected void registerInteractionAffordances() {
 
-    registerActionAffordance(PREFIX + "State", "state", "/state",
+    registerActionAffordance(HUE_PREFIX + "State", "state", "/state",
         new StringSchema.Builder().addEnum(new HashSet<String>(Arrays.asList("on", "off"))).build());
 
-    registerActionAffordance(PREFIX + "Color", "color", "/color",
+    registerActionAffordance(HUE_PREFIX + "Color", "color", "/color",
         new StringSchema.Builder().addEnum(new HashSet<String>(Arrays.asList("red", "green", "blue"))).build());
           
     // Add initial coordinates, these are currently hard-coded
     ModelBuilder builder = new ModelBuilder();
     ValueFactory rdf = SimpleValueFactory.getInstance();
 
-    builder.add(getArtifactUri(), RDF.TYPE, rdf.createIRI(PREFIX + "HueLamp"));
-    builder.add(getArtifactUri(), rdf.createIRI(PREFIX + "state"), rdf.createLiteral("off"));
-    builder.add(getArtifactUri(), rdf.createIRI(PREFIX + "color"), rdf.createLiteral("green"));
+    builder.add(getArtifactUri(), RDF.TYPE, rdf.createIRI(HUE_PREFIX + "HueLamp"));
+    builder.add(getArtifactUri(), rdf.createIRI(HUE_PREFIX + "state"), rdf.createLiteral("off"));
+    builder.add(getArtifactUri(), rdf.createIRI(HUE_PREFIX + "color"), rdf.createLiteral("green"));
     
     addMetadata(builder.build());
 
@@ -136,10 +137,13 @@ public class AuthHue extends ContextAuthHypermediaArtifact {
   protected void registerSharedContextAutorizations() {
     // add the Lab308ContextDomainGroup as a shared context requirement in the AuthorisationRegistry
     // First, create the read and write SharedContextAccessAuthorisation object
+
+    // The URI for the ContextDomainGroup 
+
     SharedContextAccessAuthorization readAccessAuth = new SharedContextAccessAuthorization(getArtifactUri(), 
-          AuthorizationAccessType.READ, PREFIX + "Lab308ContextDomainGroup");    
+          AuthorizationAccessType.READ, EXAMPLE_PREFIX + "Lab308ContextDomainGroup");    
     SharedContextAccessAuthorization writeAccessAuth = new SharedContextAccessAuthorization(getArtifactUri(), 
-          AuthorizationAccessType.WRITE, PREFIX + "Lab308ContextDomainGroup");    
+          AuthorizationAccessType.WRITE, EXAMPLE_PREFIX + "Lab308ContextDomainGroup");    
     
     // add the read and write SharedContextAccessAuthorisation object to the AuthorisationRegistry
     AuthorizationRegistry authRegistry = AuthorizationRegistry.getInstance();

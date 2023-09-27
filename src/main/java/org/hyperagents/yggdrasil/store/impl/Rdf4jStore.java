@@ -7,9 +7,6 @@ import java.io.StringReader;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.Graph;
 import org.apache.commons.rdf.api.IRI;
@@ -17,6 +14,7 @@ import org.apache.commons.rdf.api.RDFSyntax;
 import org.apache.commons.rdf.rdf4j.RDF4J;
 import org.apache.commons.rdf.rdf4j.RDF4JGraph;
 import org.apache.commons.rdf.rdf4j.RDF4JTriple;
+import org.eclipse.rdf4j.RDF4JException;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.repository.Repository;
@@ -35,6 +33,10 @@ import org.eclipse.rdf4j.rio.helpers.StatementCollector;
 import org.eclipse.rdf4j.sail.memory.MemoryStore;
 import org.eclipse.rdf4j.sail.nativerdf.NativeStore;
 import org.hyperagents.yggdrasil.store.RdfStore;
+
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 
 public class Rdf4jStore implements RdfStore {
@@ -124,7 +126,7 @@ public class Rdf4jStore implements RdfStore {
       .set(BasicWriterSettings.RDF_LANGSTRING_TO_LANG_LITERAL, true)
       .set(BasicWriterSettings.XSD_STRING_TO_PLAIN_LITERAL, true)
       .set(BasicWriterSettings.INLINE_BLANK_NODES, true);
-
+      
     if (graph instanceof RDF4JGraph) {
       try {
         writer.startRDF();
@@ -143,7 +145,7 @@ public class Rdf4jStore implements RdfStore {
         }
         writer.endRDF();
       }
-      catch (RDFHandlerException e) {
+      catch (RDF4JException e) {
         throw new IOException("RDF handler exception: " + e.getMessage());
       }
       catch (UnsupportedRDFormatException e) {

@@ -43,7 +43,7 @@
       <snapshots />
       <id>jacamo</id>
       <name>JACAMO Maven Repository</name>
-      <url>https://jacamo.sourceforge.net/maven2/</url>
+      <url>https://raw.githubusercontent.com/jacamo-lang/mvn-repo/master</url>
     </repository>
   </repositories>
   <dependencies>

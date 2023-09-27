@@ -3,8 +3,6 @@ package org.hyperagents.yggdrasil.http;
 import java.io.IOException;
 import java.io.StringReader;
 
-import io.netty.handler.codec.http.HttpResponseStatus;
-import io.vertx.core.http.HttpMethod;
 import org.apache.hc.core5.http.ContentType;
 import org.apache.http.HttpStatus;
 import org.eclipse.rdf4j.model.Model;
@@ -31,6 +29,7 @@ import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.http.HttpMethod;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;

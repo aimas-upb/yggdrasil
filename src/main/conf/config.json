@@ -1,7 +1,7 @@
 {
   "http-config" : {
     "host" : "0.0.0.0",
-    "port" : 8080,
+    "port" : 8008,
     "base-uri" : "http://localhost:8899/",
     "websub-hub-uri" : "https://yggdrasil.interactions.ics.unisg.ch/hub/"
   },
