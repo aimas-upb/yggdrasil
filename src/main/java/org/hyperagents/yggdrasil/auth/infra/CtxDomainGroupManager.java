@@ -36,7 +36,8 @@ public class CtxDomainGroupManager {
     
     // get a RDF4J Repository reference to the sparql endpoint
     Repository endpoint = new SPARQLRepository(sparqlEndpointURI);
-    endpoint.initialize();
+    endpoint.init();
+    
     try {
     	// get the initial result
     	RepositoryConnection conn = endpoint.getConnection();
