@@ -1,4 +1,4 @@
-package org.hyperagents.yggdrasil.cartago;
+package org.hyperagents.yggdrasil.auth.artifacts;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -12,6 +12,8 @@ import org.hyperagents.yggdrasil.auth.model.AuthorizationAccessType;
 import org.hyperagents.yggdrasil.auth.model.AuthorizedEntityType;
 import org.hyperagents.yggdrasil.auth.model.CASHMERE;
 import org.hyperagents.yggdrasil.auth.model.ContextBasedAuthorization;
+import org.hyperagents.yggdrasil.cartago.HypermediaArtifact;
+import org.hyperagents.yggdrasil.cartago.HypermediaArtifactRegistry;
 
 import cartago.CartagoException;
 import ch.unisg.ics.interactions.wot.td.ThingDescription;
@@ -46,7 +48,7 @@ public abstract class ContextAuthHypermediaArtifact extends HypermediaArtifact {
         authorizations.removeIf(auth -> auth.getResourceURI().equals(resourceUri));
     }
 
-    // method to remove all authorizations granted to an entity identified by its URI
+    // method to remove all agit uthorizations granted to an entity identified by its URI
     public void removeAuthorizationsToEntity(String requesterIdentifierURI) {
         authorizations.removeIf(auth -> auth.getAuthorizedEntityURI().equals(requesterIdentifierURI));
     }

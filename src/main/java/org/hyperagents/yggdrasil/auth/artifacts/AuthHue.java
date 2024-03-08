@@ -1,4 +1,4 @@
-package org.hyperagents.yggdrasil.cartago.artifacts;
+package org.hyperagents.yggdrasil.auth.artifacts;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -20,7 +20,6 @@ import org.hyperagents.yggdrasil.auth.model.AuthorizationAccessType;
 import org.hyperagents.yggdrasil.auth.model.AuthorizedEntityType;
 import org.hyperagents.yggdrasil.auth.model.CASHMERE;
 import org.hyperagents.yggdrasil.auth.model.ContextBasedAuthorization;
-import org.hyperagents.yggdrasil.cartago.ContextAuthHypermediaArtifact;
 
 import cartago.OPERATION;
 import ch.unisg.ics.interactions.wot.td.schemas.StringSchema;
