@@ -7,8 +7,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.hyperagents.yggdrasil.auth.model.AuthorizationAccessType;
-import org.hyperagents.yggdrasil.auth.model.SharedContextAccessAuthorization;
-import org.hyperagents.yggdrasil.auth.model.SharedContextControlAuthorization;
+import org.hyperagents.yggdrasil.auth.model.ContextBasedAuthorization;
 
 public class AuthorizationRegistry {
   // A singleton class used to manage authorisations. 
@@ -17,12 +16,10 @@ public class AuthorizationRegistry {
   // It also provides methods to add and remove authorisations for a given artifact.
   
   private static AuthorizationRegistry registry;
-  private Map<String, List<SharedContextAccessAuthorization>> sharedContextAccessAuthorisationMap;
-  private Map<String, List<SharedContextControlAuthorization>> sharedContextControlAuthorisationMap;
+  private Map<String, List<ContextBasedAuthorization>> contextAccessAuthorisationMap;
 
   private AuthorizationRegistry() {
-    sharedContextAccessAuthorisationMap = new Hashtable<>();
-    sharedContextControlAuthorisationMap = new Hashtable<>();
+    contextAccessAuthorisationMap = new Hashtable<>();
   }
 
   public static synchronized AuthorizationRegistry getInstance() {
@@ -33,55 +30,33 @@ public class AuthorizationRegistry {
     return registry;
   }
 
-  public List<SharedContextAccessAuthorization> getSharedContextAccessAuthorisations(String artifactIRI) {
-    return sharedContextAccessAuthorisationMap.getOrDefault(artifactIRI, Collections.<SharedContextAccessAuthorization>emptyList());
+  public List<ContextBasedAuthorization> getContextAuthorisations(String artifactIRI) {
+    return contextAccessAuthorisationMap.getOrDefault(artifactIRI, Collections.<ContextBasedAuthorization>emptyList());
   }
 
-  public List<SharedContextControlAuthorization> getSharedContextControlAuthorisations(String artifactIRI) {
-    return sharedContextControlAuthorisationMap.getOrDefault(artifactIRI, Collections.<SharedContextControlAuthorization>emptyList());
-  }
-
-  public void addSharedContextAccessAuthorisation(String artifactIRI, SharedContextAccessAuthorization accessAuthorization) {
-    List<SharedContextAccessAuthorization> accessAuthorisations = registry.getSharedContextAccessAuthorisations(artifactIRI);
+  public void addContextAuthorisation(String artifactIRI, ContextBasedAuthorization accessAuthorization) {
+    List<ContextBasedAuthorization> accessAuthorisations = registry.getContextAuthorisations(artifactIRI);
     accessAuthorisations.add(accessAuthorization);
 
-    sharedContextAccessAuthorisationMap.put(artifactIRI, accessAuthorisations);
+    contextAccessAuthorisationMap.put(artifactIRI, accessAuthorisations);
   }
 
-  public void addSharedContextControlAuthorisation(String artifactIRI, SharedContextControlAuthorization controlAuthorization) {
-    List<SharedContextControlAuthorization> controlAuthorisations = registry.getSharedContextControlAuthorisations(artifactIRI);
-    controlAuthorisations.add(controlAuthorization);
-
-    sharedContextControlAuthorisationMap.put(artifactIRI, controlAuthorisations);
-  }
-
-  public void removeSharedContextAccessAuthorisation(String artifactIRI, SharedContextAccessAuthorization accessAuthorization) {
-    List<SharedContextAccessAuthorization> accessAuthorisations = registry.getSharedContextAccessAuthorisations(artifactIRI);
+  public void removeContextAuthorisation(String artifactIRI, ContextBasedAuthorization accessAuthorization) {
+    List<ContextBasedAuthorization> accessAuthorisations = registry.getContextAuthorisations(artifactIRI);
     accessAuthorisations.remove(accessAuthorization);
 
     if (accessAuthorisations.isEmpty()) {
-      sharedContextAccessAuthorisationMap.remove(artifactIRI);
+      contextAccessAuthorisationMap.remove(artifactIRI);
     } else {
-      sharedContextAccessAuthorisationMap.put(artifactIRI, accessAuthorisations);
-    }
-  }
-
-  public void removeSharedContextControlAuthorisation(String artifactIRI, SharedContextControlAuthorization controlAuthorization) {
-    List<SharedContextControlAuthorization> controlAuthorisations = registry.getSharedContextControlAuthorisations(artifactIRI);
-    controlAuthorisations.remove(controlAuthorization);
-
-    if (controlAuthorisations.isEmpty()) {
-      sharedContextControlAuthorisationMap.remove(artifactIRI);
-    } else {
-      sharedContextControlAuthorisationMap.put(artifactIRI, controlAuthorisations);
+      contextAccessAuthorisationMap.put(artifactIRI, accessAuthorisations);
     }
   }
 
   public boolean hasAccessAuthorization(String artifactIRI, AuthorizationAccessType accessType) {
-    List<SharedContextAccessAuthorization> accessAuthorisations = registry.getSharedContextAccessAuthorisations(artifactIRI);
+    List<ContextBasedAuthorization> accessAuthorisations = registry.getContextAuthorisations(artifactIRI);
 
-    for (SharedContextAccessAuthorization accessAuthorization : accessAuthorisations) {
-      if (accessAuthorization.getAccessType() == accessType) {
+    for (ContextBasedAuthorization accessAuthorization : accessAuthorisations) {
+      if (accessAuthorization.getAccessTypes().contains(accessType)) {
         return true;
       }
     }
@@ -91,17 +66,15 @@ public class AuthorizationRegistry {
 
   public boolean isReadProtected(String artifactIRI) {
     // We consider that a user has read access to an artifact if he has either a read or a write access to it.
-    return hasAccessAuthorization(artifactIRI, AuthorizationAccessType.READ) || hasAccessAuthorization(artifactIRI, AuthorizationAccessType.WRITE);
+    return hasAccessAuthorization(artifactIRI, AuthorizationAccessType.READ);
   }
 
   public boolean isWriteProtected(String artifactIRI) {
-    return hasAccessAuthorization(artifactIRI, AuthorizationAccessType.WRITE);
+    return hasAccessAuthorization(artifactIRI, AuthorizationAccessType.WRITE) || hasAccessAuthorization(artifactIRI, AuthorizationAccessType.APPEND);
   }
 
   public boolean isControlProtected(String artifactIRI) {
-    List<SharedContextControlAuthorization> controlAuthorisations = registry.getSharedContextControlAuthorisations(artifactIRI);
-
-    return !controlAuthorisations.isEmpty();
+    return hasAccessAuthorization(artifactIRI, AuthorizationAccessType.CONTROL);
   }
 
   // Method to get the URI of the RDF document that contains the authorisations for a given artifact
@@ -109,7 +82,7 @@ public class AuthorizationRegistry {
   // Returns an Optional<String> object containing the URI of the RDF document if any authorisation is found for the given artifact, 
   // or an empty Optional<String> object otherwise.
   public Optional<String> getAuthorisationDocumentURI(String artifactIRI) {
-    if (sharedContextAccessAuthorisationMap.containsKey(artifactIRI) || sharedContextControlAuthorisationMap.containsKey(artifactIRI)) {
+    if (contextAccessAuthorisationMap.containsKey(artifactIRI)) {
       return Optional.of(artifactIRI + "/wac");
     }
     

@@ -4,20 +4,22 @@
 @prefix dct: <http://purl.org/dc/terms/> .
 @prefix wotsec: <https://www.w3.org/2019/wot/security#> .
 @prefix js: <https://www.w3.org/2019/wot/json-schema#> .
+@prefix acl: <http://www.w3.org/ns/auth/acl#> .
+@prefix hmas: <https://purl.org/hmas/> .
 @prefix cashmere: <https://aimas.cs.pub.ro/ont/cashmere#> .
 @prefix ex: <http://example.org/> .
 
 
-ex:huelampdemo a td:Thing, cashmere:ContextAuthorizedResource, ex:HueLamp ;
-    td:title "Hue Lamp with Shared Context Authorization" ;
+ex:light308 a td:Thing, cashmere:ContextAuthorizedResource, hmas:Artifact, ex:HueLamp ;
+    td:title "Hue Lamp with Context-Based Authorization" ;
     td:hasSecurityConfiguration [ a wotsec:NoSecurityScheme ] ;
-    td:hasBase <http://example.org/huelampdemo> ;
+    td:hasBase ex:upb_hmas/workspaces/precis/artifacts/light308 ; # Artifact URI
     td:hasPropertyAffordance [
         a td:PropertyAffordance;
         td:name "state" ;
         td:hasForm [
             htv:methodName "GET" ;
-            hctl:hasTarget <http://example.org/huelampdemo/state> ;
+            hctl:hasTarget ex:upb_hmas/workspaces/precis/artifacts/light308/state ; # state property affordance URI
             hctl:forContentType "application/json";
             hctl:hasOperationType td:readProperty ;
         ] ;
@@ -27,7 +29,7 @@ ex:huelampdemo a td:Thing, cashmere:ContextAuthorizedResource, ex:HueLamp ;
         td:name "color" ;
         td:hasForm [
             htv:methodName "GET" ;
-            hctl:hasTarget <http://example.org/huelampdemo/color> ;
+            hctl:hasTarget ex:upb_hmas/workspaces/precis/artifacts/light308/color ; # color property affordance URI
             hctl:forContentType "application/json";
             hctl:hasOperationType td:readProperty ;
         ] ;
@@ -37,7 +39,7 @@ ex:huelampdemo a td:Thing, cashmere:ContextAuthorizedResource, ex:HueLamp ;
         td:name "state" ;
         td:hasForm [
             htv:methodName "PUT" ;
-            hctl:hasTarget <http://example.org/huelampdemo/state> ;
+            hctl:hasTarget ex:upb_hmas/workspaces/precis/artifacts/light308/state ;    # state action affordance URI
             hctl:forContentType "application/json";
             hctl:hasOperationType td:invokeAction;
         ] ;
@@ -56,7 +58,7 @@ ex:huelampdemo a td:Thing, cashmere:ContextAuthorizedResource, ex:HueLamp ;
         td:name "color" ;
         td:hasForm [
             htv:methodName "PUT" ;
-            hctl:hasTarget <http://example.org/huelampdemo/color> ;
+            hctl:hasTarget ex:upb_hmas/workspaces/precis/artifacts/light308/color ;     # color action affordance URI
             hctl:forContentType "application/json";
             hctl:hasOperationType td:invokeAction;
         ] ;
@@ -72,8 +74,9 @@ ex:huelampdemo a td:Thing, cashmere:ContextAuthorizedResource, ex:HueLamp ;
     ] ;
     # Shared Context Authorization
     cashmere:hasAccessAuthorization [
-        a cashmere:SharedContextAccessAuthorization ;
-        cashmere:enablesAccessType acl:Read, acl:Write ;
-        cashmere:requiresMembershipIn ex:Lab308ContextDomainGroup ;
+        a cashmere:ContextBasedAuthorization ;
+        acl:accessTo ex:light308 ;
+        acl:mode acl:Read, acl:Write ;
+        cashmere:hasAccessCondition ex:light308AccessCondition ;
     ] .
     

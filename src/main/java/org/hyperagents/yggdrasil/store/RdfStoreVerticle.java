@@ -16,9 +16,7 @@ import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.util.ModelBuilder;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.hyperagents.yggdrasil.auth.AuthorizationRegistry;
-import org.hyperagents.yggdrasil.auth.model.Authorization;
-import org.hyperagents.yggdrasil.auth.model.SharedContextAccessAuthorization;
-import org.hyperagents.yggdrasil.auth.model.SharedContextControlAuthorization;
+import org.hyperagents.yggdrasil.auth.model.ContextBasedAuthorization;
 import org.hyperagents.yggdrasil.http.HttpEntityHandler;
 import org.hyperagents.yggdrasil.store.impl.RdfStoreFactory;
 import org.hyperagents.yggdrasil.websub.HttpNotificationVerticle;
@@ -136,17 +134,12 @@ public class RdfStoreVerticle extends AbstractVerticle {
       AuthorizationRegistry authRegistry = AuthorizationRegistry.getInstance();
       
       // extract the access authorizations from the entity Model, then register them with the AuthorizationRegistry
-      List<Authorization> accessAuthorizations = SharedContextAccessAuthorization.fromModel(entityModel);
-      accessAuthorizations.stream().forEach(auth -> authRegistry.addSharedContextAccessAuthorisation(entityIRI.getIRIString(), (SharedContextAccessAuthorization)auth));
+      List<ContextBasedAuthorization> accessAuthorizations = ContextBasedAuthorization.fromModel(entityModel);
+      accessAuthorizations.stream().forEach(auth -> authRegistry.addContextAuthorisation(entityIRI.getIRIString(), (ContextBasedAuthorization)auth));
 
-      // do the same for the control authorizations
-      List<Authorization> controlAuthorizations = SharedContextControlAuthorization.fromModel(entityModel);
-      controlAuthorizations.stream().forEach(auth -> authRegistry.addSharedContextControlAuthorisation(entityIRI.getIRIString(), (SharedContextControlAuthorization)auth));
-      
       // create an all authorizations list by combining the access and control authorizations and use the list to create the document graph
-      List<Authorization> allAuthorizations = new ArrayList<>();
+      List<ContextBasedAuthorization> allAuthorizations = new ArrayList<>();
       allAuthorizations.addAll(accessAuthorizations);
-      allAuthorizations.addAll(controlAuthorizations);
 
       if (!allAuthorizations.isEmpty()) {
         LOGGER.info("Found Shared Context Authorizations in entity graph");
@@ -156,7 +149,7 @@ public class RdfStoreVerticle extends AbstractVerticle {
 
         // create a new acl document graph by adding the authorizations to the entity graph. The graph name is the document IRI
         Graph aclGraph = rdf.createGraph();
-        for (Authorization authorization : allAuthorizations) {
+        for (ContextBasedAuthorization authorization : allAuthorizations) {
           // obtain the Model from the authorization
           Model authModel = authorization.toModel().values().iterator().next();
           

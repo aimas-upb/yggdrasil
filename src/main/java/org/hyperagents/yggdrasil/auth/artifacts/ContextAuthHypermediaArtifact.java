@@ -1,16 +1,17 @@
 package org.hyperagents.yggdrasil.cartago;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.util.ModelBuilder;
-import org.hyperagents.yggdrasil.auth.model.Authorization;
 import org.hyperagents.yggdrasil.auth.model.AuthorizationAccessType;
 import org.hyperagents.yggdrasil.auth.model.AuthorizedEntityType;
 import org.hyperagents.yggdrasil.auth.model.CASHMERE;
+import org.hyperagents.yggdrasil.auth.model.ContextBasedAuthorization;
 
 import cartago.CartagoException;
 import ch.unisg.ics.interactions.wot.td.ThingDescription;
@@ -21,40 +22,41 @@ import ch.unisg.ics.interactions.wot.td.io.TDGraphWriter;
 public abstract class ContextAuthHypermediaArtifact extends HypermediaArtifact {
   
     // The list of Authorization objects for this ContextAuthenticated Hypermedia Artifact
-    protected List<Authorization> authorizations = new ArrayList<Authorization>();
+    protected List<ContextBasedAuthorization> authorizations = new ArrayList<ContextBasedAuthorization>();
 
     protected abstract void registerSharedContextAutorizations();
 
     // method to get the list of authorizations
-    public List<Authorization> getAuthorizations() {
+    public List<ContextBasedAuthorization> getAuthorizations() {
         return authorizations;
     }
 
     // method to register an authorization object
-    public void registerAuthorization(Authorization auth) {
+    public void registerAuthorization(ContextBasedAuthorization auth) {
         authorizations.add(auth);
     }
 
     // method to remove an authorization object
-    public void removeAuthorization(Authorization auth) {
+    public void removeAuthorization(ContextBasedAuthorization auth) {
         authorizations.remove(auth);
     }
 
     // method to remove all authorizations to a resource identified by its URI
     public void removeAuthorizations(String resourceUri) {
-        authorizations.removeIf(auth -> auth.getResourceUri().equals(resourceUri));
+        authorizations.removeIf(auth -> auth.getResourceURI().equals(resourceUri));
     }
 
     // method to remove all authorizations granted to an entity identified by its URI
-    public void removeAuthorizationsToEntity(String entityUri) {
-        authorizations.removeIf(auth -> auth.getEntityUri().equals(entityUri));
+    public void removeAuthorizationsToEntity(String requesterIdentifierURI) {
+        authorizations.removeIf(auth -> auth.getAuthorizedEntityURI().equals(requesterIdentifierURI));
     }
 
     // method to register an authorization by its components
     public void registerAuthorization(String resourceName, String resourceUri,  
-                                      AuthorizationAccessType type, AuthorizedEntityType entityType, 
-                                      String entityName, String entityUri) {
-        Authorization auth = new Authorization(resourceName, resourceUri, type, entityType, entityName, entityUri);
+                                      AuthorizationAccessType accessType, AuthorizedEntityType requesterType, 
+                                      String requesterName, String requesterIdentifierUri, String accessConditionsShapeUri) {
+        ContextBasedAuthorization auth = new ContextBasedAuthorization(resourceName, resourceUri, Arrays.asList(accessType), 
+              requesterName, requesterType, requesterIdentifierUri, accessConditionsShapeUri);
         authorizations.add(auth);
     }
 
@@ -82,9 +84,9 @@ public abstract class ContextAuthHypermediaArtifact extends HypermediaArtifact {
         // and add the corresponding triples to the metadata graph. 
         // TODO: Redefine the Authorization class to use the CASHMERE ontology
         ModelBuilder authorisationsModel = new ModelBuilder();
-        for (Authorization auth : getAuthorizations()) {
+        for (ContextBasedAuthorization auth : getAuthorizations()) {
           Map<IRI, Model> authTriples = auth.toModel();
-          if (auth.getAccessType() == AuthorizationAccessType.CONTROL){
+          if (auth.getAccessTypes().contains(AuthorizationAccessType.CONTROL)){
             // If the access type is control, we add the hasControlAuthorization property. We use authTriples.keySet().iterator().next() because
             // we know that the authTriples map contains only one entry
             authorisationsModel.add(getArtifactUri(), CASHMERE.hasControlAuthorization, authTriples.keySet().iterator().next());  

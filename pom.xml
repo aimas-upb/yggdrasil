@@ -89,6 +89,11 @@
         </dependency>
         <dependency>
             <groupId>org.eclipse.rdf4j</groupId>
+            <artifactId>rdf4j-repository-sparql</artifactId>
+            <version>3.3.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.rdf4j</groupId>
             <artifactId>rdf4j-sail-memory</artifactId>
             <version>3.3.0</version>
         </dependency>
@@ -100,6 +105,11 @@
         <dependency>
 		    <groupId>org.eclipse.rdf4j</groupId>
 		    <artifactId>rdf4j-repository-manager</artifactId>
+		    <version>3.3.0</version>
+		</dependency>
+		<dependency>
+		    <groupId>org.eclipse.rdf4j</groupId>
+		    <artifactId>rdf4j-shacl</artifactId>
 		    <version>3.3.0</version>
 		</dependency>
         

@@ -44,17 +44,21 @@ public class WACHandler {
 
     // if there is no WAC document URI for the entity, return a 404 Not Found response
     if (!wacDocumentURI.isPresent()) {
+      LOGGER.info("No WAC document URI found for entity with URI: " + entityIRI);
       context.response().setStatusCode(HttpStatus.SC_NOT_FOUND).end();
       return;
     }
     else {
       // otherwise, send a request to the RdfStoreVerticle event bus to retrieve the WAC document
+      LOGGER.info("Sending request to retrieve WAC document with URI: " + wacDocumentURI.get() + " ...");
       DeliveryOptions options = new DeliveryOptions();
       options.addHeader(HttpEntityHandler.REQUEST_METHOD, RdfStore.GET_ENTITY);
       options.addHeader(HttpEntityHandler.REQUEST_URI, wacDocumentURI.get());
 
       vertx.eventBus().request(RdfStore.BUS_ADDRESS, null, options, reply -> {
         if (reply.succeeded()) {
+          // if the reply is successful, return a 200 OK response with the WAC document
+          LOGGER.info("WAC document with URI: " + wacDocumentURI.get() + " successfully retrieved.");
           context.response().setStatusCode(HttpStatus.SC_OK).end(reply.result().body().toString());
         }
         else {
@@ -62,15 +66,18 @@ public class WACHandler {
           // check if the reply is a ReplyException
           if (reply.cause() instanceof ReplyException) {
             if (((ReplyException)reply.cause()).failureCode() == HttpStatus.SC_NOT_FOUND) {
+              LOGGER.info("WAC document with URI: " + wacDocumentURI.get() + " not found. Sending 404 Not Found response.");
               context.response().setStatusCode(HttpStatus.SC_NOT_FOUND).end();
             }
             else {
               // otherwise return a 500 Internal Server Error response
+              LOGGER.info("ReplyException retrieving WAC document with URI: " + wacDocumentURI.get() + ". Sending 500 Internal Server Error response.");
               context.response().setStatusCode(HttpStatus.SC_INTERNAL_SERVER_ERROR).end();
             }
           }
           else {
             // otherwise return a 500 Internal Server Error response
+            LOGGER.info("Error retrieving WAC document with URI: " + wacDocumentURI.get() + ". Reason: " + reply.cause().getMessage());
             context.response().setStatusCode(HttpStatus.SC_INTERNAL_SERVER_ERROR).end();
           }
         }
@@ -118,19 +125,25 @@ public class WACHandler {
       options.addHeader(WACVerticle.ACCESS_TYPE, AuthorizationAccessType.WRITE.toString());
       options.addHeader(WACVerticle.AGENT_WEBID, agentWebId);
 
+      LOGGER.info("Sending request to validate access to resource with URI: " + artifactIRI + " ...");
+      LOGGER.info("Delivery options: " + options.toString());
+
       vertx.eventBus().request(WACVerticle.BUS_ADDRESS, null, options, reply -> {
         if (reply.succeeded()) {
           // if the access is granted, we let the request go through
+          LOGGER.info("Access to resource with URI: " + artifactIRI + " granted.");
           context.next();
         }
         else {
           // otherwise we return an error
+          LOGGER.info("Access to resource with URI: " + artifactIRI + " denied.");
           context.response().setStatusCode(HttpStatus.SC_UNAUTHORIZED).end();
         }
       });
     }
     else {
       // otherwise we just let the request go through
+      LOGGER.info("Resource with URI: " + artifactIRI + " is not write protected. Letting request go through.");
       context.next();
     }
   }

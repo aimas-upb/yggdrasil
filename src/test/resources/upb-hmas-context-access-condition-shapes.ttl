@@ -1,0 +1,91 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix consert: <http://pervasive.semanticweb.org/ont/2017/07/consert/core/> .
+@prefix ann: <http://pervasive.semanticweb.org/ont/2017/07/consert/annotation/> .
+
+@prefix acl: <http://www.w3.org/ns/auth/acl#> .
+@prefix hmas: <https://purl.org/hmas/> .
+@prefix cashmere: <https://aimas.cs.pub.ro/ont/cashmere#> .
+@prefix shacl: <http://www.w3.org/ns/shacl#> .
+
+@prefix ex: <http://example.org/> .
+
+
+cashmere:ContextBasedAccessCondition rdfs:subClassOf shacl:NodeShape .
+cashmere:ProfiledContextCondition rdfs:subClassOf shacl:NodeShape .
+cashmere:ContextDomainCondition rdfs:subClassOf shacl:NodeShape .
+
+# The access condition for the light308 resource
+ex:light308AccessCondition 
+    a cashmere:ContextBasedAccessCondition ;
+    sh:targetNode cashmere:accessRequester ;
+    sh:and (
+        ex:UPBEmploymentCondition
+        ex:Lab308MembershipCondition
+    )
+
+# The access condition based on the profiled information of the accessRequester - the employment condition
+ex:UPBEmploymentCondition
+    a cashmere:ProfiledContextCondition ;
+    sh:targetClass ex:WorksAt ;
+    sh:property [
+        sh:path consert:assertionSubject ;
+        sh:hasValue cashmere:accessRequester ;
+    ] ;
+    sh:property [
+        sh:path concert:assertionObject ;
+        sh:hasValue ex:UPB ;
+    ] ;
+    sh:property [
+        sh:path ann:hasAnnotation ;
+        sh:class ann:TemporalValidityAnnotation ;
+        sh:node [
+            a sh:NodeShape ;
+            sh:and (
+              [
+                a sh:PropertyShape ;
+                sh:path ann:startTime ;
+                sh:sparql [
+                  a sh:SPARQLConstraint ;
+                  sh:message “The employment validity of the accessRequester has to include the current moment.” ;
+                  sh:prefixes xsd: ;
+                  sh:select """
+                    SELECT $this $PATH ?value
+                    WHERE {
+                      $this $PATH ?value ;
+                      BIND (xsd:dateTime(NOW()) AS ?date)
+                      FILTER (?date > ?value)
+                    }
+                  """
+                ]
+              ] ;
+              [
+                  a sh:PropertyShape ;
+                  sh:path ann:endTime ;
+                  sh:sparql [
+                    a sh:SPARQLConstraint ;
+                    sh:message “The employment validity of the accessRequester has to include the current moment.” ;
+                    sh:prefixes xsd: ;
+                    sh:select """
+                      SELECT $this $PATH ?value
+                      WHERE {
+                        $this $PATH ?value ;
+                        BIND (xsd:dateTime(NOW()) AS ?date)
+                        FILTER (?date < ?value)
+                      }
+                    """
+                  ]
+              ]
+            )
+        ] ;
+    ] .
+
+
+ex:Lab308MembershipCondition
+    a cashmere:ContextDomainCondition ;
+    sh:targetNode cashmere:accessRequester ;
+    sh:property [
+        sh:path cashmere:memberIn ;
+        sh:hasValue ex:upb_hmas/ctxmgmt/domains/lab308Domain/group
+    ] .

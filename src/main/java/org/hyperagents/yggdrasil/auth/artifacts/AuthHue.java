@@ -1,6 +1,7 @@
 package org.hyperagents.yggdrasil.cartago.artifacts;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 
@@ -16,7 +17,9 @@ import org.eclipse.rdf4j.model.util.ModelBuilder;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.hyperagents.yggdrasil.auth.AuthorizationRegistry;
 import org.hyperagents.yggdrasil.auth.model.AuthorizationAccessType;
-import org.hyperagents.yggdrasil.auth.model.SharedContextAccessAuthorization;
+import org.hyperagents.yggdrasil.auth.model.AuthorizedEntityType;
+import org.hyperagents.yggdrasil.auth.model.CASHMERE;
+import org.hyperagents.yggdrasil.auth.model.ContextBasedAuthorization;
 import org.hyperagents.yggdrasil.cartago.ContextAuthHypermediaArtifact;
 
 import cartago.OPERATION;
@@ -26,7 +29,7 @@ import ch.unisg.ics.interactions.wot.td.security.NoSecurityScheme;
 public class AuthHue extends ContextAuthHypermediaArtifact {
 
   private static final String EXAMPLE_PREFIX = "http://example.org/";
-  private static final String HUE_PREFIX = "http://example.org/huelampdemo/";
+  private static final String LIGHT308_PREFIX = "http://example.org/upb_hmas/workspaces/precis/artifacts/light308/";
 
   private enum LightState {
     ON("on"),
@@ -114,19 +117,19 @@ public class AuthHue extends ContextAuthHypermediaArtifact {
   @Override
   protected void registerInteractionAffordances() {
 
-    registerActionAffordance(HUE_PREFIX + "State", "state", "/state",
+    registerActionAffordance(EXAMPLE_PREFIX + "LampState", "state", "/state",
         new StringSchema.Builder().addEnum(new HashSet<String>(Arrays.asList("on", "off"))).build());
 
-    registerActionAffordance(HUE_PREFIX + "Color", "color", "/color",
+    registerActionAffordance(EXAMPLE_PREFIX + "LampColor", "color", "/color",
         new StringSchema.Builder().addEnum(new HashSet<String>(Arrays.asList("red", "green", "blue"))).build());
           
     // Add initial coordinates, these are currently hard-coded
     ModelBuilder builder = new ModelBuilder();
     ValueFactory rdf = SimpleValueFactory.getInstance();
 
-    builder.add(getArtifactUri(), RDF.TYPE, rdf.createIRI(HUE_PREFIX + "HueLamp"));
-    builder.add(getArtifactUri(), rdf.createIRI(HUE_PREFIX + "state"), rdf.createLiteral("off"));
-    builder.add(getArtifactUri(), rdf.createIRI(HUE_PREFIX + "color"), rdf.createLiteral("green"));
+    builder.add(getArtifactUri(), RDF.TYPE, rdf.createIRI(EXAMPLE_PREFIX + "HueLamp"));
+    builder.add(getArtifactUri(), rdf.createIRI(EXAMPLE_PREFIX + "state"), rdf.createLiteral("off"));
+    builder.add(getArtifactUri(), rdf.createIRI(EXAMPLE_PREFIX + "color"), rdf.createLiteral("green"));
     
     addMetadata(builder.build());
 
@@ -140,14 +143,13 @@ public class AuthHue extends ContextAuthHypermediaArtifact {
 
     // The URI for the ContextDomainGroup 
 
-    SharedContextAccessAuthorization readAccessAuth = new SharedContextAccessAuthorization(getArtifactUri(), 
-          AuthorizationAccessType.READ, EXAMPLE_PREFIX + "Lab308ContextDomainGroup");    
-    SharedContextAccessAuthorization writeAccessAuth = new SharedContextAccessAuthorization(getArtifactUri(), 
-          AuthorizationAccessType.WRITE, EXAMPLE_PREFIX + "Lab308ContextDomainGroup");    
+    ContextBasedAuthorization accessAuth = new ContextBasedAuthorization(getArtifactUri(), 
+            Arrays.asList(AuthorizationAccessType.READ, AuthorizationAccessType.WRITE), AuthorizedEntityType.AGENT,
+            CASHMERE.accessRequester.stringValue(),
+            EXAMPLE_PREFIX + "light308AccessCondition");    
     
     // add the read and write SharedContextAccessAuthorisation object to the AuthorisationRegistry
     AuthorizationRegistry authRegistry = AuthorizationRegistry.getInstance();
-    authRegistry.addSharedContextAccessAuthorisation(getArtifactUri(), readAccessAuth);
-    authRegistry.addSharedContextAccessAuthorisation(getArtifactUri(), writeAccessAuth);
+    authRegistry.addContextAuthorisation(getArtifactUri(), accessAuth);
   }
 }

@@ -1,5 +1,9 @@
 package org.hyperagents.yggdrasil.auth.http;
 
+import org.eclipse.rdf4j.repository.Repository;
+import org.eclipse.rdf4j.repository.sail.SailRepository;
+import org.eclipse.rdf4j.sail.memory.MemoryStore;
+import org.eclipse.rdf4j.sail.shacl.ShaclSail;
 import org.hyperagents.yggdrasil.auth.model.AuthorizationAccessType;
 
 import io.vertx.core.AbstractVerticle;
@@ -35,6 +39,9 @@ public class WACVerticle extends AbstractVerticle {
         //register the event bus handlers
         EventBus eventBus = vertx.eventBus();
         eventBus.consumer(BUS_ADDRESS, this::handleWACRequest);
+        
+        ShaclSail shaclSail = new ShaclSail(new MemoryStore());
+        Repository repo = new SailRepository(shaclSail);
     }
 
     private void handleWACRequest(Message<String> message) {
@@ -49,6 +56,8 @@ public class WACVerticle extends AbstractVerticle {
             case GET_WAC_RESOURCE:
             case ADD_AUTHORIZATION:
             case REMOVE_AUTHORIZATION:
+            default:
+                LOGGER.info("WAC method " + wacMethod + " not supported yet");
                 throw new UnsupportedOperationException("Not implemented yet");
         }
     }
