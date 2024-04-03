@@ -4,9 +4,9 @@ import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
+import org.eclipse.rdf4j.repository.sail.SailRepository;
 import org.eclipse.rdf4j.repository.sparql.SPARQLRepository;
-
-import fr.inria.corese.rdf4j.CoreseGraphModel;
+import org.eclipse.rdf4j.sail.memory.MemoryStore;
 
 public class CtxDomainGroupManager {
 
@@ -15,11 +15,11 @@ public class CtxDomainGroupManager {
 
   // The Corese graph model that contains the Context Domain Group memberships of individual agents
   // The contents of the model are included in the /memberships graph, relative to the URI of this Context Domain
-  protected CoreseGraphModel membershipsModel;
+  protected SailRepository membershipsRepository;
 
   public CtxDomainGroupManager(String ctxDomainUri) {
     this.ctxDomainUri = ctxDomainUri;
-    this.membershipsModel = new CoreseGraphModel();
+    this.membershipsRepository = new SailRepository(new MemoryStore());
   }
 
 

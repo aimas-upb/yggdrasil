@@ -5,4 +5,4 @@
 @prefix ex: <http://example.org/> .
 
 ex:alexAgent a consert:ContextEntity, foaf:Agent .
-ex:UPB a consert:ContextEntity, foaf:Organization .
+ex:upb a consert:ContextEntity, ex:Organization .

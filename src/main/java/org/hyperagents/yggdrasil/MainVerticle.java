@@ -2,6 +2,7 @@ package org.hyperagents.yggdrasil;
 
 import org.hyperagents.yggdrasil.auth.http.WACVerticle;
 import org.hyperagents.yggdrasil.cartago.CartagoVerticle;
+import org.hyperagents.yggdrasil.context.http.ContextMgmtVerticle;
 import org.hyperagents.yggdrasil.http.HttpServerVerticle;
 import org.hyperagents.yggdrasil.store.RdfStoreVerticle;
 import org.hyperagents.yggdrasil.websub.HttpNotificationVerticle;
@@ -36,7 +37,7 @@ public class MainVerticle extends AbstractVerticle {
         // .put("http://example.org/Counter", "org.hyperagents.yggdrasil.cartago.artifacts.Counter")
         // .put("http://example.org/SpatialCalculator2D", "org.hyperagents.yggdrasil.cartago"
         //     + ".SpatialCalculator2D")
-        .put("http://example.org/light308", "org.hyperagents.yggdrasil.cartago.artifacts.AuthHue");
+        .put("http://example.org/HueLamp", "org.hyperagents.yggdrasil.cartago.artifacts.AuthHue");
 
     JsonObject cartagoConfig = config();
     cartagoConfig.put("known-artifacts", knownArtifacts);
@@ -46,6 +47,52 @@ public class MainVerticle extends AbstractVerticle {
         new DeploymentOptions().setWorker(true).setConfig(cartagoConfig)
       );
     
+    // Deploy a verticle to handle context management.
+    // This includes: managing the RDF graphs for static and profiled context received from deployed artifacts, 
+    // managing the RDF streams with dynamic context data, 
+    // managing the group membership RDF graph containing information about agent membership in ContextDomainGroups,
+    // dispatching context-based authorization validation requests to the WAC verticle
+
+    // set up a default configuration for the context management verticle
+    JsonObject contextMgmtConfig = config();
+    
+    // add the URI of the service to the configuration
+    contextMgmtConfig.put("service-uri", "http://example.org/upb_hmas/ctxmgmt");
+
+    String baseFilePath = "/home/alex/work/AI-MAS/projects/2022-CASHMERE/dev/yggdrasil/src/test/resources";
+
+    // The default configuration includes for this service contains local file URLs for the static context and profiled context graphs
+    // deployed at the level of the Yggdrasil instance. The configuration can be modified to include other sources of context graphs.
+    contextMgmtConfig.put("static-context", "file://" + baseFilePath + "/upb-hmas-static-context.ttl");
+    contextMgmtConfig.put("profiled-context", "file://" + baseFilePath + "/upb-hmas-profiled-context.ttl");
+
+    JsonObject dynamicContextConfig = new JsonObject()
+        .put("http://example.org/LocatedAt", "http://example.org/upb_hmas/ctxmgmt/streams/LocatedAt");
+    contextMgmtConfig.put("dynamic-context", dynamicContextConfig);
+
+    // The configuration also includes a map of context domains, 
+    // each domain being identified by the URI of the ContextEntity playing the object role in the ContextAssertion
+    JsonObject contextDomainConfig = new JsonObject()
+      .put("http://example.org/upb_hmas/ctxmgmt/domains/lab308domain", new JsonObject()
+        .put("assertion", "http://example.org/LocatedAt")
+        .put("entity", "http://example.org/lab308")
+        .put("stream", "http://example.org/upb_hmas/ctxmgmt/streams/LocatedAt")
+        .put("generatorClass", "org.hyperagents.yggdrasil.context.LocatedAtContextStream")
+        .put("rule", "file://" + baseFilePath + "/lab308membership.rspql")
+        .put("engine-config", "file://" + baseFilePath + "/lab308membership-csparql-engine-config.properties")
+      );
+    contextMgmtConfig.put("context-domains", contextDomainConfig);
+    
+    // The configuration also includes a mapping of artifact URIs to the URI of access control policies (given as SHACL shapes) 
+    // that govern access to the artifact
+    JsonObject artifactPolicyConfig = new JsonObject()
+      .put("http://example.org/HueLamp", "file://" + baseFilePath + "/upb-hmas-context-access-condition-shapes.ttl");
+    contextMgmtConfig.put("artifact-policies", artifactPolicyConfig);
+
+    vertx.deployVerticle(new ContextMgmtVerticle(),
+        new DeploymentOptions().setWorker(true).setConfig(config())
+      );
+
     // Deploy the WAC verticle
     vertx.deployVerticle(new WACVerticle(),
         new DeploymentOptions().setWorker(true).setConfig(config())

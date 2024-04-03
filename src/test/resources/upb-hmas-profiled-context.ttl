@@ -9,9 +9,9 @@ ex:WorksAt rdfs:subclassOf consert:BinaryContextAssertion .
 _:b1  a ex:WorksAt ;
       consert:assertionAcquisitionType consert:Profiled ;
       consert:assertionSubject ex:alexAgent ;
-      consert:assertionObject ex:UPB ;
+      consert:assertionObject ex:upb ;
       ann:hasAnnotation _:b2 .
 
 _:b2 a ann:TemporalValidityAnnotation ;
-      ann:startTime “2020-02-01 12:00:00”^^xsd:dateTime ;
-      ann:endTime   “2051-07-25 23:59:59”^^xsd:dateTime .
+      ann:startTime "2020-02-01 12:00:00"^^xsd:dateTime ;
+      ann:endTime   "2051-07-25 23:59:59"^^xsd:dateTime .

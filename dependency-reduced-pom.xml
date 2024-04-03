@@ -32,9 +32,41 @@
                 </transformer>
                 <transformer />
               </transformers>
+              <filters>
+                <filter>
+                  <artifact>*:*</artifact>
+                  <excludes>
+                    <exclude>META-INF/*.SF</exclude>
+                    <exclude>META-INF/*.DSA</exclude>
+                    <exclude>META-INF/*.RSA</exclude>
+                  </excludes>
+                </filter>
+              </filters>
             </configuration>
           </execution>
         </executions>
+      </plugin>
+      <plugin>
+        <artifactId>maven-jar-plugin</artifactId>
+        <version>3.1.0</version>
+        <configuration>
+          <archive>
+            <manifest>
+              <addClasspath>true</addClasspath>
+            </manifest>
+            <manifestEntries>
+              <mode>development</mode>
+              <url>${project.url}</url>
+              <key>Implementation-Build</key>
+              <value>${buildNumber}</value>
+            </manifestEntries>
+          </archive>
+          <excludes>
+            <exclude>META-INF/*.SF</exclude>
+            <exclude>META-INF/*.DSA</exclude>
+            <exclude>META-INF/*.RSA</exclude>
+          </excludes>
+        </configuration>
       </plugin>
     </plugins>
   </build>
@@ -61,10 +93,12 @@
     </dependency>
   </dependencies>
   <properties>
-    <maven.compiler.target>1.8</maven.compiler.target>
+    <maven.compiler.target>8</maven.compiler.target>
+    <project.url>https://sites.google.com/view/cashmere-project</project.url>
     <main.verticle.name>org.hyperagents.yggdrasil.MainVerticle</main.verticle.name>
-    <maven.compiler.source>1.8</maven.compiler.source>
+    <maven.compiler.source>8</maven.compiler.source>
     <vertx.version>3.9.0</vertx.version>
     <main.class.name>io.vertx.core.Launcher</main.class.name>
+    <buildNumber>0.0.SNAPSHOT</buildNumber>
   </properties>
 </project>
