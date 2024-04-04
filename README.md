@@ -1,12 +1,24 @@
 # Yggdrasil
 
 A platform for [Hypermedia Multi-Agent Systems (MAS)](https://hyperagents.org/) [1] built with
-[Vert.x](https://vertx.io/). The current implementation provides two core functionalities:
-
+[Vert.x](https://vertx.io/). 
+This implementation is a fork of the original Hypermedia MAS (HMAS) platform called [Yggdrasil](https://github.com/Interactions-HSG/yggdrasil).
+The upstream implementation provides two core functionalities:
 * it allows to program and deploy hypermedia environments for autonomous agents that conform to the
   _Agents & Artifacts_ meta-model [2]
 * it partially implements the [W3C WebSub recommendation](https://www.w3.org/TR/2018/REC-websub-20180123/)
   and can act as a WebSub hub
+
+# Yggdrasil and CASHMERE
+The original functionalities are extended in the current fork with support for (see also [3] and [4]):
+* Management of *context information* leveraged in a deployed HMAS through a ContextManagement Service that can:
+  - Keep track of *static* and *profiled* context information. Context is represented as RDF graphs following the *ContextAssertion* model [5]
+  - Keep track of *dynamic* context streams, referencing information that can change frequently (e.g. activities, location). Content of context streams is represented as *ContextAssertions*.
+* Management of *ContextDomains* [4,6] and *ContextDomainGroups* as facilitators for identification of **shared dynamic context** between an agent and a web resource.
+* Generation of **authorizations** for *context-based access* to the affordances of a web resource using the policy format specified by [SOLID Web Access Control](https://solid.github.io/web-access-control-spec/)
+* Management of interactions between a requesting agent and the affordances of a *context-based access controlled* web resource
+
+These additions are part of the [CASHMERE project](https://sites.google.com/view/cashmere-project/) which researches mechanisms to provide *context-based* authorization, search and discovery functionality for agents interacting with web resources in a Hypermedia MAS.
 
 #### References
 
@@ -17,8 +29,17 @@ Lecture Notes in Computer Science, vol 11375. Springer, Cham. https://doi.org/10
 [2] Alessandro Ricci, Michele Piunti, and Mirko Viroli. 2011. Environment Programming in multi-agent
 systems: an artifact-based perspective. Autonomous Agents and Multi-Agent Systems, 23(2):158-192.
 
+[3] Sorici, A. and Florea, A.M., 2023, May. Towards Context-Based Authorizations for Interactions in Hypermedia-Driven Agent Environments-The CASHMERE Framework. In International Workshop on Engineering Multi-Agent Systems (pp. 191-207). Cham: Springer Nature Switzerland.
 
-## Prerequisites
+[4] Sorici, A. and Florea, A.M. 2024. Towards Enabling Context-Based Dynamic Access Control in Hypermedia MAS - a Technical Report. [link](https://tinyurl.com/cashmere-context-based-auth)
+
+[5] Sorici, A., Picard, G., Boissier, O., Zimmermann, A. and Florea, A., 2015. CONSERT: Applying semantic web technologies to context modeling in ambient intelligence. Computers & Electrical Engineering, 44, pp.280-306.
+
+[6] Sorici, A., Picard, G., Boissier, O. and Florea, A., 2015. Multi-agent based flexible deployment of context management in ambient intelligence applications. In Advances in Practical Applications of Agents, Multi-Agent Systems, and Sustainability: The PAAMS Collection: 13th International Conference, PAAMS 2015, Salamanca, Spain, June 3-4, 2015, Proceedings 13 (pp. 225-239). Springer International Publishing.
+
+
+
+## Prerequisites for running the updated Yggdrasil Platform
 
 * JDK 12+
 * Use `git clone --recursive` to make sure that the project is checked out including its submodules
@@ -59,7 +80,7 @@ Run with docker-compose (by default, it exposes the port `8899` of the host mach
 docker-compose up
 ```
 
-## HTTP API Overview
+## HTTP API Overview for Yggdrasil
 
 The HTTP API implements CRUD operations for 3 types of resources:
 
@@ -119,4 +140,10 @@ that contains a JSON payload with the following fields (see the
 
 When a resource is updated, Yggdrasil issues `POST` requests with the (updated) resource
 representation to all registered callbacks.
+
+## HTTP API Overview for CASHMERE extension
+The Context Management Service added to Yggdrasil will return information on the managed context streams, ContextDomains and ContextDomainGroups by means of the following URI templates:
+* Context streams (URI template: `/environments/<env_id>/ctxmgmt/streams`)
+* ContextDomains (URI template: `/environments/<env_id>/ctxmgmt/domains`)
+* ContextDomainGroups (URI template: `/environments/<env_id>/ctxmgmt/domains/<domain_name>/group`)
 
