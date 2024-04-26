@@ -5,8 +5,10 @@ import org.eclipse.rdf4j.repository.sail.SailRepository;
 import org.eclipse.rdf4j.sail.memory.MemoryStore;
 import org.eclipse.rdf4j.sail.shacl.ShaclSail;
 import org.hyperagents.yggdrasil.auth.model.AuthorizationAccessType;
+import org.hyperagents.yggdrasil.context.http.ContextMgmtVerticle;
 
 import io.vertx.core.AbstractVerticle;
+import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.logging.Logger;
@@ -68,10 +70,20 @@ public class WACVerticle extends AbstractVerticle {
         AuthorizationAccessType accessType = AuthorizationAccessType.valueOf(message.headers().get(ACCESS_TYPE));
         LOGGER.info("Validating Authorization for agent " + agentWebId + " to access resource " + accessedResourceUri + " in mode " + accessType);
         
-        // TODO: implement the authorization validation via a federated SPARQL query that comprises the local RDFstore and the SPARQL endpoint of the
-        // ContextDomainGroup indicated as entityURI in the SharedContextAccessAuthorization
+        // forward a call to the ContextMgmtVerticle to validate the authorization
+        DeliveryOptions options = new DeliveryOptions();
+        options.addHeader(ContextMgmtVerticle.CONTEXT_SERVICE, ContextMgmtVerticle.VALIDATE_CONTEXT_BASED_ACCESS);
+        options.addHeader(ContextMgmtVerticle.ACCESS_REQUESTER_URI, agentWebId);
+        options.addHeader(ContextMgmtVerticle.ACCESSED_RESOURCE_URI, accessedResourceUri);
 
-        // by default, we allow access
-        message.reply(true);
+        vertx.eventBus().request(ContextMgmtVerticle.BUS_ADDRESS, null, options, reply -> {
+            if (reply.succeeded()) {
+                // if the reply is successful, return the result of the authorization validation
+                message.reply(reply.result().body());
+            } else {
+                // if the reply is not successful, return false
+                message.fail(403, "Authorization validation failed");
+            }
+        });
     }
 }

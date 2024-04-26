@@ -28,7 +28,7 @@ import ch.unisg.ics.interactions.wot.td.security.NoSecurityScheme;
 public class AuthHue extends ContextAuthHypermediaArtifact {
 
   private static final String EXAMPLE_PREFIX = "http://example.org/";
-  private static final String LIGHT308_PREFIX = "http://example.org/upb_hmas/workspaces/precis/artifacts/light308/";
+  private static final String LIGHT308_PREFIX = "http://example.org/environments/upb_hmas/workspaces/precis/artifacts/light308/";
 
   private enum LightState {
     ON("on"),

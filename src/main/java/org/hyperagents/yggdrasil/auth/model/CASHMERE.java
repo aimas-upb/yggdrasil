@@ -5,52 +5,52 @@ import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 
 public class CASHMERE {
     // Namespaces
-    private static final String CASHMERE = "https://aimas.cs.pub.ro/ont/cashmere";
-    private static final String ACL = "http://www.w3.org/ns/auth/acl#";
-    private static final String CONSERT_CORE = "http://pervasive.semanticweb.org/ont/2017/07/consert/core#";
+    public static final String CASHMERE_NS = "https://aimas.cs.pub.ro/ont/cashmere#";
+    public static final String ACL_NS = "http://www.w3.org/ns/auth/acl#";
+    public static final String CONSERT_CORE_NS = "http://pervasive.semanticweb.org/ont/2017/07/consert/core#";
 
     // Classes
-    public static final IRI Access = iri(ACL, "Access");
-    public static final IRI Append = iri(ACL, "Append");
-    public static final IRI AuthenticatedAgent = iri(ACL, "AuthenticatedAgent");
-    public static final IRI Authorization = iri(ACL, "Authorization");
-    public static final IRI Control = iri(ACL, "Control");
-    public static final IRI Origin = iri(ACL, "Origin");
-    public static final IRI Read = iri(ACL, "Read");
-    public static final IRI Write = iri(ACL, "Write");
-    public static final IRI ContextAuthorizedResource = iri(CASHMERE, "ContextAuthorizedResource");
-    public static final IRI ContextBasedAccessAuthorization = iri(CASHMERE, "ContextBasedAccessAuthorization");
-    public static final IRI ContextBasedAccessCondition = iri(CASHMERE, "ContextBasedAccessCondition");
-    public static final IRI ContextBasedAuthorization = iri(CASHMERE, "ContextBasedAuthorization");
-    public static final IRI ContextBasedControlAuthorization = iri(CASHMERE, "ContextBasedControlAuthorization");
-    public static final IRI ContextDomain = iri(CASHMERE, "ContextDomain");
-    public static final IRI ContextDomainCondition = iri(CASHMERE, "ContextDomainCondition");
-    public static final IRI ContextDomainGroup = iri(CASHMERE, "ContextDomainGroup");
-    public static final IRI ContextManagementService = iri(CASHMERE, "ContextManagementService");
-    public static final IRI ContextStream = iri(CASHMERE, "ContextStream");
-    public static final IRI ProfiledContextCondition = iri(CASHMERE, "ProfiledContextCondition");
-    public static final IRI StaticContextCondition = iri(CASHMERE, "StaticContextCondition");
+    public static final IRI Access = iri(ACL_NS, "Access");
+    public static final IRI Append = iri(ACL_NS, "Append");
+    public static final IRI AuthenticatedAgent = iri(ACL_NS, "AuthenticatedAgent");
+    public static final IRI Authorization = iri(ACL_NS, "Authorization");
+    public static final IRI Control = iri(ACL_NS, "Control");
+    public static final IRI Origin = iri(ACL_NS, "Origin");
+    public static final IRI Read = iri(ACL_NS, "Read");
+    public static final IRI Write = iri(ACL_NS, "Write");
+    public static final IRI ContextAuthorizedResource = iri(CASHMERE_NS, "ContextAuthorizedResource");
+    public static final IRI ContextBasedAccessAuthorization = iri(CASHMERE_NS, "ContextBasedAccessAuthorization");
+    public static final IRI ContextBasedAccessCondition = iri(CASHMERE_NS, "ContextBasedAccessCondition");
+    public static final IRI ContextBasedAuthorization = iri(CASHMERE_NS, "ContextBasedAuthorization");
+    public static final IRI ContextBasedControlAuthorization = iri(CASHMERE_NS, "ContextBasedControlAuthorization");
+    public static final IRI ContextDomain = iri(CASHMERE_NS, "ContextDomain");
+    public static final IRI ContextDomainCondition = iri(CASHMERE_NS, "ContextDomainCondition");
+    public static final IRI ContextDomainGroup = iri(CASHMERE_NS, "ContextDomainGroup");
+    public static final IRI ContextManagementService = iri(CASHMERE_NS, "ContextManagementService");
+    public static final IRI ContextStream = iri(CASHMERE_NS, "ContextStream");
+    public static final IRI ProfiledContextCondition = iri(CASHMERE_NS, "ProfiledContextCondition");
+    public static final IRI StaticContextCondition = iri(CASHMERE_NS, "StaticContextCondition");
 
     // Object Properties
-    public static final IRI accessTo = iri(ACL, "accessTo");
-    public static final IRI accessToClass = iri(ACL, "accessToClass");
-    public static final IRI agent = iri(ACL, "agent");
-    public static final IRI agentClass = iri(ACL, "agentClass");
-    public static final IRI agentGroup = iri(ACL, "agentGroup");
-    public static final IRI delegates = iri(ACL, "delegates");
-    public static final IRI definesGroup = iri(CASHMERE, "definesGroup");
-    public static final IRI groupFor = iri(CASHMERE, "groupFor");
-    public static final IRI hasAccessAuthorization = iri(CASHMERE, "hasAccessAuthorization");
-    public static final IRI hasAccessCondition = iri(CASHMERE, "hasAccessCondition");
-    public static final IRI hasContextDimension = iri(CASHMERE, "hasContextDimension");
-    public static final IRI hasControlAuthorization = iri(CASHMERE, "hasControlAuthorization");
-    public static final IRI managesDomain = iri(CASHMERE, "managesDomain");
-    public static final IRI managesStream = iri(CASHMERE, "managesStream");
-    public static final IRI memberIn = iri(CASHMERE, "memberIn");
-    public static final IRI streams = iri(CASHMERE, "streams");
+    public static final IRI accessTo = iri(ACL_NS, "accessTo");
+    public static final IRI accessToClass = iri(ACL_NS, "accessToClass");
+    public static final IRI agent = iri(ACL_NS, "agent");
+    public static final IRI agentClass = iri(ACL_NS, "agentClass");
+    public static final IRI agentGroup = iri(ACL_NS, "agentGroup");
+    public static final IRI delegates = iri(ACL_NS, "delegates");
+    public static final IRI definesGroup = iri(CASHMERE_NS, "definesGroup");
+    public static final IRI groupFor = iri(CASHMERE_NS, "groupFor");
+    public static final IRI hasAccessAuthorization = iri(CASHMERE_NS, "hasAccessAuthorization");
+    public static final IRI hasAccessCondition = iri(CASHMERE_NS, "hasAccessCondition");
+    public static final IRI hasContextDimension = iri(CASHMERE_NS, "hasContextDimension");
+    public static final IRI hasControlAuthorization = iri(CASHMERE_NS, "hasControlAuthorization");
+    public static final IRI managesDomain = iri(CASHMERE_NS, "managesDomain");
+    public static final IRI managesStream = iri(CASHMERE_NS, "managesStream");
+    public static final IRI memberIn = iri(CASHMERE_NS, "memberIn");
+    public static final IRI streams = iri(CASHMERE_NS, "streams");
 
     // Individual
-    public static final IRI accessRequester = iri(CASHMERE, "accessRequester");
+    public static final IRI accessRequester = iri(CASHMERE_NS, "accessRequester");
 
     // Annotation Properties
     public static final IRI describes = iri("http://purl.org/dc/elements/1.1/describes");

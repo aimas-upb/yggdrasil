@@ -5,7 +5,6 @@ import java.net.URL;
 import java.util.Optional;
 
 import org.apache.commons.configuration.ConfigurationException;
-import org.apache.jena.atlas.logging.Log;
 import org.apache.jena.graph.Graph;
 import org.apache.jena.graph.Triple;
 import org.eclipse.rdf4j.model.IRI;
@@ -14,6 +13,7 @@ import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.sail.SailRepository;
 import org.eclipse.rdf4j.sail.memory.MemoryStore;
+import org.hyperagents.yggdrasil.auth.model.CASHMERE;
 import org.hyperagents.yggdrasil.context.http.Utils;
 import org.streamreasoning.rsp4j.api.engine.config.EngineConfiguration;
 import org.streamreasoning.rsp4j.api.querying.ContinuousQuery;
@@ -183,10 +183,7 @@ public class ContextDomain {
         // Add the contents of the graph g to the CDG membership repository
         // The content will always be a single triple, with the subject being the URI of the agent and 
         // the object being the URI of the ContextDomainGroup. The predicate is always cashmere:memberIn.
-        try {
-            // open a connection to the CDG membership repository
-            RepositoryConnection conn = cdgMembershipRepo.getConnection();
-            
+        try (RepositoryConnection conn = cdgMembershipRepo.getConnection()) {
             // iterate over the triples in the graph and add them to the repository
             while (g.find().hasNext()) {
                 Triple triple = g.find().next();
@@ -220,5 +217,35 @@ public class ContextDomain {
     public String getContextDomainGroupURI() {
         // add the path element "group" to the contextDomainURI
         return contextDomainURI + "/group";
+    }
+
+    public boolean verifyMembership(String accessRequesterURI) {
+        // check if the accessRequesterURI is a member of the ContextDomainGroup
+        try (RepositoryConnection conn = cdgMembershipRepo.getConnection()) {
+            // create the statement to check
+            Resource accessRequester = conn.getValueFactory().createIRI(accessRequesterURI);
+            Resource contextDomainGroup = conn.getValueFactory().createIRI(getContextDomainGroupURI());
+            Statement stmt = conn.getValueFactory().createStatement(accessRequester, CASHMERE.memberIn, contextDomainGroup);
+
+            // check if the statement is present in the repository
+            return conn.hasStatement(stmt, false);
+        } catch (Exception e) {
+            System.err.println("Error while verifying the membership of the agent " + accessRequesterURI + " in the ContextDomainGroup " + getContextDomainGroupURI() + ": " + e.getMessage());
+            return false;
+        }
+    }
+
+
+    // =============================================================================================================
+    // Auxiliary functions to get the URI of the ContextDomainGroup from the URI of the ContextDomain and vice versa
+    // =============================================================================================================
+    public static String getGroupFromDomain(String contextDomainURI) {
+        // add the path element "group" to the contextDomainURI
+        return contextDomainURI + "/group";
+    }
+
+    public static String getDomainFromGroup(String contextDomainGroupURI) {
+        // remove the path element "group" from the contextDomainGroupURI
+        return contextDomainGroupURI.replace("/group", "");
     }
 }

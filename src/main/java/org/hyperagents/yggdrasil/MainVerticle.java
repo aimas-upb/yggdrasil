@@ -67,16 +67,16 @@ public class MainVerticle extends AbstractVerticle {
     contextMgmtConfig.put("profiled-context", "file://" + baseFilePath + "/upb-hmas-profiled-context.ttl");
 
     JsonObject dynamicContextConfig = new JsonObject()
-        .put("http://example.org/LocatedAt", "http://example.org/upb_hmas/ctxmgmt/streams/LocatedAt");
+        .put("http://example.org/LocatedAt", "http://example.org/environments/upb_hmas/ctxmgmt/streams/LocatedAt");
     contextMgmtConfig.put("dynamic-context", dynamicContextConfig);
 
     // The configuration also includes a map of context domains, 
     // each domain being identified by the URI of the ContextEntity playing the object role in the ContextAssertion
     JsonObject contextDomainConfig = new JsonObject()
-      .put("http://example.org/upb_hmas/ctxmgmt/domains/lab308domain", new JsonObject()
+      .put("http://example.org/upb_hmas/ctxmgmt/domains/lab308Domain", new JsonObject()
         .put("assertion", "http://example.org/LocatedAt")
         .put("entity", "http://example.org/lab308")
-        .put("stream", "http://example.org/upb_hmas/ctxmgmt/streams/LocatedAt")
+        .put("stream", "http://example.org/environments/upb_hmas/ctxmgmt/streams/LocatedAt")
         .put("generatorClass", "org.hyperagents.yggdrasil.context.LocatedAtContextStream")
         .put("rule", "file://" + baseFilePath + "/lab308membership.rspql")
         .put("engine-config", "file://" + baseFilePath + "/lab308membership-csparql-engine-config.properties")
@@ -90,7 +90,7 @@ public class MainVerticle extends AbstractVerticle {
     contextMgmtConfig.put("artifact-policies", artifactPolicyConfig);
 
     vertx.deployVerticle(new ContextMgmtVerticle(),
-        new DeploymentOptions().setWorker(true).setConfig(config())
+        new DeploymentOptions().setWorker(true).setConfig(contextMgmtConfig)
       );
 
     // Deploy the WAC verticle

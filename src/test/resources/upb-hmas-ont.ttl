@@ -4,6 +4,7 @@
 @prefix xml: <http://www.w3.org/XML/1998/namespace> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
 @prefix consert-ann: <http://pervasive.semanticweb.org/ont/2017/07/consert/annotation#> .
 @prefix consert-core: <http://pervasive.semanticweb.org/ont/2017/07/consert/core#> .
 @prefix ex: <http://example.org/> .
@@ -19,17 +20,20 @@
 #    Classes
 #################################################################
 
-###  http://aimas.cs.pub.ro/consert/ontologies/precis#AvailabilityStatus
+###  http://example.org/AvailabilityStatus
 ex:AvailabilityStatus rdf:type owl:Class ;
                     rdfs:subClassOf consert-core:ContextEntity .
 
 
-###  http://aimas.cs.pub.ro/consert/ontologies/precis#Device
+###  http://example.org/Device
 ex:Device rdf:type owl:Class ;
         rdfs:subClassOf consert-core:ContextEntity .
 
+ex:HueLamp rdf:type owl:Class ;
+        rdfs:subClassOf ex:Device .
 
-###  http://aimas.cs.pub.ro/consert/ontologies/precis#HasAvailabilityStatus
+
+###  http://example.org/HasAvailabilityStatus
 ex:HasAvailabilityStatus rdf:type owl:Class ;
                        rdfs:subClassOf consert-core:BinaryContextAssertion ,
                                        [ rdf:type owl:Restriction ;
@@ -46,7 +50,7 @@ ex:HasAvailabilityStatus rdf:type owl:Class ;
                                        ] .
 
 
-###  http://aimas.cs.pub.ro/consert/ontologies/precis#LocatedAt
+###  http://example.org/LocatedAt
 ex:LocatedAt rdf:type owl:Class ;
            rdfs:subClassOf consert-core:BinaryContextAssertion ,
                            [ rdf:type owl:Restriction ;
@@ -71,12 +75,12 @@ ex:LocatedAt rdf:type owl:Class ;
                            ] .
 
 
-###  http://aimas.cs.pub.ro/consert/ontologies/precis#Organization
+###  http://example.org/Organization
 ex:Organization rdf:type owl:Class ;
               rdfs:subClassOf consert-core:ContextEntity .
 
 
-###  http://aimas.cs.pub.ro/consert/ontologies/precis#OwnedBy
+###  http://example.org/OwnedBy
 ex:OwnedBy rdf:type owl:Class ;
          rdfs:subClassOf consert-core:BinaryContextAssertion ,
                          [ rdf:type owl:Restriction ;
@@ -97,17 +101,18 @@ ex:OwnedBy rdf:type owl:Class ;
                          ] .
 
 
-###  http://aimas.cs.pub.ro/consert/ontologies/precis#Person
-ex:Person rdf:type owl:Class ;
-        rdfs:subClassOf consert-core:ContextEntity .
+###  http://example.org/Person
+ex:Agent rdf:type owl:Class ;
+        rdfs:subClassOf consert-core:ContextEntity ;
+        rdfs:subClassOf foaf:Agent .
 
 
-###  http://aimas.cs.pub.ro/consert/ontologies/precis#Room
+###  http://example.org/Room
 ex:Room rdf:type owl:Class ;
       rdfs:subClassOf consert-core:ContextEntity .
 
 
-###  http://aimas.cs.pub.ro/consert/ontologies/precis#WorksAt
+###  http://example.org/WorksAt
 ex:WorksAt rdf:type owl:Class ;
          rdfs:subClassOf consert-core:BinaryContextAssertion ,
                          [ rdf:type owl:Restriction ;
@@ -128,59 +133,59 @@ ex:WorksAt rdf:type owl:Class ;
 #    Individuals
 #################################################################
 
-###  http://aimas.cs.pub.ro/consert/ontologies/precis#alex
-ex:alex rdf:type owl:NamedIndividual ,
-               ex:Person .
+###  http://example.org/alexAgent
+ex:alexAgent rdf:type owl:NamedIndividual ,
+               ex:Agent .
 
 
-###  http://aimas.cs.pub.ro/consert/ontologies/precis#alexWorkPlace
+###  http://example.org/alexWorkPlace
 ex:alexWorkPlace rdf:type owl:NamedIndividual ,
                         ex:WorksAt ;
                consert-ann:hasAnnotation ex:alexWorkTemporalAnn ;
                consert-core:assertionObject ex:upb ;
-               consert-core:assertionSubject ex:alex .
+               consert-core:assertionSubject ex:alexAgent .
 
 
-###  http://aimas.cs.pub.ro/consert/ontologies/precis#alexWorkTemporalAnn
+###  http://example.org/alexWorkTemporalAnn
 ex:alexWorkTemporalAnn rdf:type owl:NamedIndividual ,
                               consert-ann:TemporalValidityAnnotation ;
-                     consert-ann:endTime "2060-02-01T10:00:00"^^xsd:dateTime ;
-                     consert-ann:startTime "2020-02-01T10:00:00"^^xsd:dateTime .
+                     consert-ann:startTime "2020-02-01 12:00:00"^^xsd:dateTime ;
+                     consert-ann:endTime   "2051-07-25 23:59:59"^^xsd:dateTime .
 
 
-###  http://aimas.cs.pub.ro/consert/ontologies/precis#available
+###  http://example.org/available
 ex:available rdf:type owl:NamedIndividual ,
                     ex:AvailabilityStatus .
 
 
-###  http://aimas.cs.pub.ro/consert/ontologies/precis#blindsLab308
-ex:blindsLab308 rdf:type owl:NamedIndividual ,
+###  http://example.org/blinds308
+ex:blinds308 rdf:type owl:NamedIndividual ,
                        ex:Device .
 
 
-###  http://aimas.cs.pub.ro/consert/ontologies/precis#hueLampLab308
-ex:hueLampLab308 rdf:type owl:NamedIndividual ,
+###  http://example.org/light308
+ex:light308 rdf:type owl:NamedIndividual ,
                         ex:Device .
 
 
-###  http://aimas.cs.pub.ro/consert/ontologies/precis#lab308
+###  http://example.org/lab308
 ex:lab308 rdf:type owl:NamedIndividual ,
                  ex:Room .
 
 
-###  http://aimas.cs.pub.ro/consert/ontologies/precis#lab308ownership
+###  http://example.org/lab308ownership
 ex:lab308ownership rdf:type owl:NamedIndividual ,
                           ex:OwnedBy ;
                  consert-core:assertionObject ex:upb ;
                  consert-core:assertionSubject ex:lab308 .
 
 
-###  http://aimas.cs.pub.ro/consert/ontologies/precis#notAvailable
+###  http://example.org/notAvailable
 ex:notAvailable rdf:type owl:NamedIndividual ,
                        ex:AvailabilityStatus .
 
 
-###  http://aimas.cs.pub.ro/consert/ontologies/precis#upb
+###  http://example.org/upb
 ex:upb rdf:type owl:NamedIndividual ,
               ex:Organization .
 

@@ -6,6 +6,7 @@ import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.BodyHandler;
 import org.apache.http.HttpStatus;
 import org.hyperagents.yggdrasil.auth.http.WACHandler;
+import org.hyperagents.yggdrasil.context.http.ContextMgmtHandler;
 
 /**
  * This verticle exposes an HTTP/1.1 interface for Yggdrasil. All requests are forwarded to a
@@ -36,6 +37,7 @@ public class HttpServerVerticle extends AbstractVerticle {
 
     HttpEntityHandler handler = new HttpEntityHandler(vertx);
     WACHandler wacHandler = new WACHandler(vertx);
+    ContextMgmtHandler ctxHandler = new ContextMgmtHandler(vertx);
 
     router.get("/environments/:envid/").handler(handler::handleRedirectWithoutSlash);
     router.get("/environments/:envid").handler(handler::handleGetEntity);
