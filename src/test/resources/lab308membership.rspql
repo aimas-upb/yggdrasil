@@ -2,11 +2,11 @@ PREFIX consert: <http://pervasive.semanticweb.org/ont/2017/07/consert/core/>
 PREFIX cashmere: <https://aimas.cs.pub.ro/ont/cashmere#> 
 PREFIX ex: <http://example.org/>
 
-REGISTER ISTREAM <ex:environments/upb_hmas/ctxmgmt/domains/lab308Domain/group/membership> AS
+REGISTER ISTREAM <http://example.org/environments/upb_hmas/ctxmgmt/domains/lab308Domain/group/membership> AS
 CONSTRUCT {
-  ?agent cashmere:memberIn <ex:upb_hmas/ctxmgmt/domains/lab308Domain/group> .
+  ?agent cashmere:memberIn <http://example.org/upb_hmas/ctxmgmt/domains/lab308Domain/group> .
 }
-FROM NAMED WINDOW <:pLoc> ON <ex:environments/upb_hmas/ctxmgmt/streams/LocatedAtStream> [RANGE PT5M STEP PT1M]
+FROM NAMED WINDOW <:pLoc> ON <http://example.org/environments/upb_hmas/ctxmgmt/streams/LocatedAt> [RANGE PT5M STEP PT1M]
 WHERE
 {
   WINDOW <:pLoc> {
