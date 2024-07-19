@@ -70,12 +70,12 @@
         <dependency>
             <groupId>org.apache.httpcomponents.client5</groupId>
             <artifactId>httpclient5</artifactId>
-            <version>5.0.1</version>
+            <version>5.1.1</version>
         </dependency>
         <dependency>
             <groupId>org.apache.httpcomponents.client5</groupId>
             <artifactId>httpclient5-fluent</artifactId>
-            <version>5.0.1</version>
+            <version>5.1.1</version>
         </dependency>
         <!-- Add other dependencies similarly -->
 
@@ -134,7 +134,7 @@
 		<dependency>
 	        <groupId>org.apache.jena</groupId>
 	        <artifactId>jena-core</artifactId>
-	        <version>4.4.0</version>
+	        <version>4.6.0</version>
 	    </dependency>
         
         <!-- <dependency>
@@ -310,6 +310,30 @@
                         <exclude>META-INF/*.RSA</exclude>
                     </excludes>
                 </configuration>
+            </plugin>
+
+            <!-- Copy test resources plugin -->
+            <plugin>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>3.2.0</version>
+                <executions>
+                    <execution>
+                        <id>copy-test-resources</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.outputDirectory}</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>src/test/resources</directory>
+                                    <filtering>false</filtering>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

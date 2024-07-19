@@ -6,6 +6,7 @@ import org.hyperagents.yggdrasil.context.http.ContextMgmtVerticle;
 import org.hyperagents.yggdrasil.http.HttpServerVerticle;
 import org.hyperagents.yggdrasil.store.RdfStoreVerticle;
 import org.hyperagents.yggdrasil.websub.HttpNotificationVerticle;
+import java.io.File;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.DeploymentOptions;
@@ -37,7 +38,7 @@ public class MainVerticle extends AbstractVerticle {
         // .put("http://example.org/Counter", "org.hyperagents.yggdrasil.cartago.artifacts.Counter")
         // .put("http://example.org/SpatialCalculator2D", "org.hyperagents.yggdrasil.cartago"
         //     + ".SpatialCalculator2D")
-        .put("http://example.org/HueLamp", "org.hyperagents.yggdrasil.cartago.artifacts.AuthHue");
+        .put("http://example.org/HueLamp", "org.hyperagents.yggdrasil.auth.artifacts.AuthHue");
 
     JsonObject cartagoConfig = config();
     cartagoConfig.put("known-artifacts", knownArtifacts);
@@ -59,12 +60,14 @@ public class MainVerticle extends AbstractVerticle {
     // add the URI of the service to the configuration
     contextMgmtConfig.put("service-uri", "http://example.org/upb_hmas/ctxmgmt");
 
-    String baseFilePath = "/home/alex/work/AI-MAS/projects/2022-CASHMERE/dev/yggdrasil/src/test/resources";
+    String testResourcesRelativePath = "src/test/resources";
+    File testResourcesDir = new File(testResourcesRelativePath);
+    String baseResourcesFilePath = testResourcesDir.getAbsolutePath();
 
     // The default configuration includes for this service contains local file URLs for the static context and profiled context graphs
     // deployed at the level of the Yggdrasil instance. The configuration can be modified to include other sources of context graphs.
-    contextMgmtConfig.put("static-context", "file://" + baseFilePath + "/upb-hmas-static-context.ttl");
-    contextMgmtConfig.put("profiled-context", "file://" + baseFilePath + "/upb-hmas-profiled-context.ttl");
+    contextMgmtConfig.put("static-context", "file://" + baseResourcesFilePath + "/upb-hmas-static-context.ttl");
+    contextMgmtConfig.put("profiled-context", "file://" + baseResourcesFilePath + "/upb-hmas-profiled-context.ttl");
 
     JsonObject dynamicContextConfig = new JsonObject()
         .put("http://example.org/LocatedAt", "http://example.org/environments/upb_hmas/ctxmgmt/streams/LocatedAt");
@@ -78,15 +81,15 @@ public class MainVerticle extends AbstractVerticle {
         .put("entity", "http://example.org/lab308")
         .put("stream", "http://example.org/environments/upb_hmas/ctxmgmt/streams/LocatedAt")
         .put("generatorClass", "org.hyperagents.yggdrasil.context.LocatedAtContextStream")
-        .put("rule", "file://" + baseFilePath + "/lab308membership.rspql")
-        .put("engine-config", "file://" + baseFilePath + "/lab308membership-csparql-engine-config.properties")
+        .put("rule", "file://" + baseResourcesFilePath + "/lab308membership.rspql")
+        .put("engine-config", "file://" + baseResourcesFilePath + "/lab308membership-csparql-engine-config.properties")
       );
     contextMgmtConfig.put("context-domains", contextDomainConfig);
     
     // The configuration also includes a mapping of artifact URIs to the URI of access control policies (given as SHACL shapes) 
     // that govern access to the artifact
     JsonObject artifactPolicyConfig = new JsonObject()
-      .put("http://example.org/HueLamp", "file://" + baseFilePath + "/upb-hmas-context-access-condition-shapes.ttl");
+      .put("http://example.org/HueLamp", "file://" + baseResourcesFilePath + "/upb-hmas-context-access-condition-shapes.ttl");
     contextMgmtConfig.put("artifact-policies", artifactPolicyConfig);
 
     vertx.deployVerticle(new ContextMgmtVerticle(),

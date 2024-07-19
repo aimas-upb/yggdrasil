@@ -4,12 +4,12 @@ PREFIX ex: <http://example.org/>
 
 REGISTER ISTREAM <ex:environments/upb_hmas/ctxmgmt/domains/lab308Domain/group/membership> AS
 CONSTRUCT {
-  ?agent cashmere:memberIn ex:upb_hmas/ctxmgmt/domains/lab308Domain/group .
+  ?agent cashmere:memberIn <ex:upb_hmas/ctxmgmt/domains/lab308Domain/group> .
 }
-FROM NAMED WINDOW :pLoc [RANGE PT5M STEP PT1M] ON STREAM <ex:environments/upb_hmas/ctxmgmt/streams/LocatedAtStream>
+FROM NAMED WINDOW <:pLoc> ON <ex:environments/upb_hmas/ctxmgmt/streams/LocatedAtStream> [RANGE PT5M STEP PT1M]
 WHERE
 {
-  WINDOW :pLoc {
+  WINDOW <:pLoc> {
     ?persLocAssertion 
         a ex:LocatedAt;
         consert:assertionSubject ?agent ;

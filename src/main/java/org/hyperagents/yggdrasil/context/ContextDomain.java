@@ -159,9 +159,11 @@ public class ContextDomain {
 
     private void initEngine() throws MalformedURLException, ConfigurationException {
         // get the content of the engineConfigURI (a .properties file path) as an absolute path
-        String configFilePath = new URL(contextDimensionURI).getPath();
+        String configFilePath = new URL(engineConfigURI).getPath();
         SDSConfiguration config = new SDSConfiguration(configFilePath);
-        EngineConfiguration ec = EngineConfiguration.loadConfig(configFilePath);
+
+        LOGGER.info("Loading the RSPQL query engine configuration from " + configFilePath);
+        EngineConfiguration ec = new EngineConfiguration(engineConfigURI);
 
         // Instantiate the RSPQL query engine
         this.membershipRuleQueryEngine = new CSPARQLEngine(0, ec);
