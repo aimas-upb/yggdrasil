@@ -58,7 +58,7 @@ public class MainVerticle extends AbstractVerticle {
     JsonObject contextMgmtConfig = config();
     
     // add the URI of the service to the configuration
-    contextMgmtConfig.put("service-uri", "http://example.org/upb_hmas/ctxmgmt");
+    contextMgmtConfig.put("service-uri", "http://example.org/environments/upb_hmas/ctxmgmt");
 
     String testResourcesRelativePath = "src/test/resources";
     File testResourcesDir = new File(testResourcesRelativePath);

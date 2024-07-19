@@ -13,13 +13,13 @@
 ex:light308 a td:Thing, cashmere:ContextAuthorizedResource, hmas:Artifact, ex:HueLamp ;
     td:title "Hue Lamp with Context-Based Authorization" ;
     td:hasSecurityConfiguration [ a wotsec:NoSecurityScheme ] ;
-    td:hasBase ex:upb_hmas/workspaces/precis/artifacts/light308 ; # Artifact URI
+    td:hasBase <http://example.org/environments/upb_hmas/workspaces/precis/artifacts/light308> ; # Artifact URI
     td:hasPropertyAffordance [
         a td:PropertyAffordance;
         td:name "state" ;
         td:hasForm [
             htv:methodName "GET" ;
-            hctl:hasTarget ex:upb_hmas/workspaces/precis/artifacts/light308/state ; # state property affordance URI
+            hctl:hasTarget <http://example.org/environments/upb_hmas/workspaces/precis/artifacts/light308/state> ; # state property affordance URI
             hctl:forContentType "application/json";
             hctl:hasOperationType td:readProperty ;
         ] ;
@@ -29,7 +29,7 @@ ex:light308 a td:Thing, cashmere:ContextAuthorizedResource, hmas:Artifact, ex:Hu
         td:name "color" ;
         td:hasForm [
             htv:methodName "GET" ;
-            hctl:hasTarget ex:upb_hmas/workspaces/precis/artifacts/light308/color ; # color property affordance URI
+            hctl:hasTarget <http://example.org/environments/upb_hmas/workspaces/precis/artifacts/light308/color> ; # color property affordance URI
             hctl:forContentType "application/json";
             hctl:hasOperationType td:readProperty ;
         ] ;
@@ -39,7 +39,7 @@ ex:light308 a td:Thing, cashmere:ContextAuthorizedResource, hmas:Artifact, ex:Hu
         td:name "state" ;
         td:hasForm [
             htv:methodName "PUT" ;
-            hctl:hasTarget ex:upb_hmas/workspaces/precis/artifacts/light308/state ;    # state action affordance URI
+            hctl:hasTarget <http://example.org/environments/upb_hmas/workspaces/precis/artifacts/light308/state> ;    # state action affordance URI
             hctl:forContentType "application/json";
             hctl:hasOperationType td:invokeAction;
         ] ;
@@ -58,7 +58,7 @@ ex:light308 a td:Thing, cashmere:ContextAuthorizedResource, hmas:Artifact, ex:Hu
         td:name "color" ;
         td:hasForm [
             htv:methodName "PUT" ;
-            hctl:hasTarget ex:upb_hmas/workspaces/precis/artifacts/light308/color ;     # color action affordance URI
+            hctl:hasTarget <http://example.org/environments/upb_hmas/workspaces/precis/artifacts/light308/color> ;     # color action affordance URI
             hctl:forContentType "application/json";
             hctl:hasOperationType td:invokeAction;
         ] ;
