@@ -6,6 +6,15 @@
   "configurations": [
     {
       "type": "java",
+      "name": "Yggdrasil Vertx",
+      "request": "launch",
+      // "console": "externalTerminal",
+      "mainClass": "io.vertx.core.Launcher",
+      "projectName": "yggdrasil",
+      "vmArgs": "--add-opens java.base/java.lang=ALL-UNNAMED -jar target/yggdrasil-0.0-shared-ctx-SNAPSHOT.jar -conf src/main/conf/config_hmas_upb.json"
+    },
+    {
+      "type": "java",
       "name": "Current File",
       "request": "launch",
       "mainClass": "${file}"
