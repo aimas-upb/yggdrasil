@@ -7,6 +7,7 @@ import java.util.Optional;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.jena.graph.Graph;
 import org.apache.jena.graph.Triple;
+import org.apache.jena.util.iterator.ExtendedIterator;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
@@ -102,7 +103,6 @@ public class ContextDomain {
             this.assertionStream = setupAssertionStream(this.assertionStreamURI.get(), streamGeneratorClass.get());
         }
 
-
         // set the URI of the RSPQL query that infers the membership of ContextEntities to the ContextDomainGroup
         this.membershipRuleQueryURI = membershipRuleQueryURI;
 
@@ -169,34 +169,48 @@ public class ContextDomain {
         this.membershipRuleQueryEngine = new CSPARQLEngine(0, ec);
 
         // register the assertion stream with the engine
-        this.membershipRuleQueryEngine.register(this.assertionStream);
+        DataStream<Graph> engineRegisteredStream = this.membershipRuleQueryEngine.register(this.assertionStream);
+        this.assertionStream.setWritableStream(engineRegisteredStream);
         
         // register the membership rule query with the engine
         JenaContinuousQueryExecution cqe = (JenaContinuousQueryExecution)membershipRuleQueryEngine.register(Utils.parseRSPQLQuery(this.membershipRuleQueryURI), config);
         ContinuousQuery query = cqe.query();
+        query.setConstruct();
         cqe.addQueryFormatter(ResponseFormatterFactory.getConstructResponseSysOutFormatter("Turtle", false));
 
         // get the result stream of the CONSTRUCT query and create a consumer that will push the results to the CDG membership repository
         this.membershipRuleQueryResultStream = (DataStream<Graph>)cqe.outstream();
         this.membershipRuleQueryResultStream.addConsumer((g, t) -> updateMembershipConsumer(g, t));
+
+        // Start the LocatedAt context stream - TODO: this will have to be redone once a web-based stream generator is implemented
+        this.assertionStream.start();
     }
 
     private void updateMembershipConsumer(Graph g, long t) {
         // Add the contents of the graph g to the CDG membership repository
         // The content will always be a single triple, with the subject being the URI of the agent and 
         // the object being the URI of the ContextDomainGroup. The predicate is always cashmere:memberIn.
+        LOGGER.info("Received the result of the membership rule query for the ContextDomain " + contextDomainURI + " at time " + t);
+        LOGGER.info("Content of the graph: " + g.toString());
+
         try (RepositoryConnection conn = cdgMembershipRepo.getConnection()) {
             // iterate over the triples in the graph and add them to the repository
-            while (g.find().hasNext()) {
-                Triple triple = g.find().next();
-                Resource subj = conn.getValueFactory().createIRI(triple.getSubject().getURI());
-                IRI pred = conn.getValueFactory().createIRI(triple.getPredicate().getURI());
-                Resource obj = conn.getValueFactory().createIRI(triple.getObject().getURI());
-                Statement stmt = conn.getValueFactory().createStatement(subj, pred, obj);
+            ExtendedIterator<Triple> graphIt = g.find();
+            while (graphIt.hasNext()) {
+                Triple triple = graphIt.next();
                 
-                // add the statement to the repository if it is not already present
-                if (!conn.hasStatement(stmt, false)) {
-                    conn.add(stmt);
+                IRI pred = conn.getValueFactory().createIRI(triple.getPredicate().getURI());
+                
+                // if the predicate is a cashmere:memberIn, add the statement to the repository
+                if (pred.equals(CASHMERE.memberIn)) {
+                    Resource subj = conn.getValueFactory().createIRI(triple.getSubject().getURI());
+                    Resource obj = conn.getValueFactory().createIRI(triple.getObject().getURI());
+                    Statement stmt = conn.getValueFactory().createStatement(subj, pred, obj);
+
+                    // add the statement to the repository if it is not already present
+                    if (!conn.hasStatement(stmt, false)) {
+                        conn.add(stmt);
+                    }
                 }
             }
         } catch (Exception e) {

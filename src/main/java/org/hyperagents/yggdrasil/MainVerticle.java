@@ -76,7 +76,7 @@ public class MainVerticle extends AbstractVerticle {
     // The configuration also includes a map of context domains, 
     // each domain being identified by the URI of the ContextEntity playing the object role in the ContextAssertion
     JsonObject contextDomainConfig = new JsonObject()
-      .put("http://example.org/upb_hmas/ctxmgmt/domains/lab308Domain", new JsonObject()
+      .put("http://example.org/environments/upb_hmas/ctxmgmt/domains/lab308Domain", new JsonObject()
         .put("assertion", "http://example.org/LocatedAt")
         .put("entity", "http://example.org/lab308")
         .put("stream", "http://example.org/environments/upb_hmas/ctxmgmt/streams/LocatedAt")

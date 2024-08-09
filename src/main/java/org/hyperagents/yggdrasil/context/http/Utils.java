@@ -29,7 +29,9 @@ public class Utils {
         queryBuilder.append((char) character);
       }
       fileReader.close();
-      return queryBuilder.toString();
+      String qString = queryBuilder.toString();
+      
+      return qString;
 
     } catch (URISyntaxException e) {
       System.err.println("Error while parsing the RSPQL query from the file URI " + queryFileURI + ": " + e.getMessage());
