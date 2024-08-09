@@ -21,6 +21,8 @@ import org.eclipse.rdf4j.model.vocabulary.RDF;
 
 
 public class ContextBasedAuthorization {
+  private static String CONTEXT_AUTH_INSTANCE_NAMESPACE = "http://example.org/context-auth-instances/";
+  
   private Optional<String> resourceName = Optional.empty();
   private String resourceURI;
 
@@ -165,7 +167,7 @@ public class ContextBasedAuthorization {
 
     // return a tuple of the authorization instance URI and the Model
     return new HashMap<IRI, Model>() {{
-      put(rdfVals.createIRI(authInstance.stringValue()), builder.build());
+      put(rdfVals.createIRI(CONTEXT_AUTH_INSTANCE_NAMESPACE + "node-" + authInstance.getID()), builder.build());
     }};
   }
 

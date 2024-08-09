@@ -2,7 +2,7 @@
   "http-config" : {
     "host" : "example.org",
     "port" : 8080,
-    "base-uri" : "http://example.org:8080/",
+    "base-uri" : "http://example.org/",
     "websub-hub-uri" : "https://yggdrasil.interactions.ics.unisg.ch/hub/"
   },
   "rdf-store" : {

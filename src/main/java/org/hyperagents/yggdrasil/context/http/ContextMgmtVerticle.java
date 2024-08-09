@@ -233,7 +233,7 @@ public class ContextMgmtVerticle extends AbstractVerticle {
 
         // get the statements in the named graph
         try (RepositoryConnection conn = contextAccessConditionsRepo.getConnection()) {
-            return Optional.of(Iterations.asList(conn.getStatements(null, null, null, false, conn.getValueFactory().createIRI(accessConditionsGraphURI))));
+            return Optional.of(Iterations.asList(conn.getStatements(null, null, null, false, conn.getValueFactory().createIRI(artifactURI))));
         } catch (RepositoryException e) {
             LOGGER.error("Error accessing the context access conditions repository: " + e.getMessage());
             return Optional.empty();
@@ -369,7 +369,7 @@ public class ContextMgmtVerticle extends AbstractVerticle {
             String query = 
                 "PREFIX cashmere: <" + CASHMERE.CASHMERE_NS + "> " +
                 "PREFIX sh: <http://www.w3.org/ns/shacl#> " +
-                "SELECT ?domainCond, ?ctxGroupURI "
+                "SELECT ?domainCond ?ctxGroupURI "
                 + "WHERE {"
                 +   "?domainCond a cashmere:ContextDomainCondition ."
                 +   "?domainCond sh:property [sh:hasValue ?ctxGroupURI] ."

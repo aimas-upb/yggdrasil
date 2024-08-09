@@ -7,6 +7,25 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 public class Utils {
+  
+  public static class Tuple<X, Y> {
+    private final X x;
+    private final Y y;
+
+    public Tuple(X x, Y y) {
+      this.x = x;
+      this.y = y;
+    }
+
+    public X getFirst() {
+      return x;
+    }
+
+    public Y getSecond() {
+      return y;
+    }
+  }
+  
   public static String getConceptLocalName(String uri) {
     // get the local name of the concept denoted by the uri, checking whether it is the last part of the URI or a fragment
     String[] uriParts = uri.split("/");

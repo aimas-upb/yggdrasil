@@ -190,8 +190,9 @@ public class ContextDomain {
         // Add the contents of the graph g to the CDG membership repository
         // The content will always be a single triple, with the subject being the URI of the agent and 
         // the object being the URI of the ContextDomainGroup. The predicate is always cashmere:memberIn.
-        LOGGER.info("Received the result of the membership rule query for the ContextDomain " + contextDomainURI + " at time " + t);
-        LOGGER.info("Content of the graph: " + g.toString());
+        
+        // LOGGER.info("Received the result of the membership rule query for the ContextDomain " + contextDomainURI + " at time " + t);
+        // LOGGER.info("Content of the graph: " + g.toString());
 
         try (RepositoryConnection conn = cdgMembershipRepo.getConnection()) {
             // iterate over the triples in the graph and add them to the repository

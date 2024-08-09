@@ -129,8 +129,9 @@ public abstract class LocalContextStream extends DataStreamImpl<Graph> implement
     while (running) {
       Graph data = generateData(lastTimestamp);
       // Log the entry
-      LOGGER.info("Generated new context data for stream " + streamName + " at timestamp " + System.currentTimeMillis() 
-              + ", internal ts: " + lastTimestamp + ": " + data);
+      
+      // LOGGER.info("Generated new context data for stream " + streamName + " at timestamp " + System.currentTimeMillis() 
+      //         + ", internal ts: " + lastTimestamp + ": " + data);
 
       stream.put(data, lastTimestamp);
       try {

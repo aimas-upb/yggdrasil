@@ -36,6 +36,9 @@ public class AuthorizationRegistry {
 
   public void addContextAuthorisation(String artifactIRI, ContextBasedAuthorization accessAuthorization) {
     List<ContextBasedAuthorization> accessAuthorisations = registry.getContextAuthorisations(artifactIRI);
+    if (accessAuthorisations.isEmpty()) {
+      accessAuthorisations = new java.util.ArrayList<>();
+    }
     accessAuthorisations.add(accessAuthorization);
 
     contextAccessAuthorisationMap.put(artifactIRI, accessAuthorisations);

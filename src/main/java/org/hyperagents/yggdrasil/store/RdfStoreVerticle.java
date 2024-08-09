@@ -17,6 +17,7 @@ import org.eclipse.rdf4j.model.util.ModelBuilder;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.hyperagents.yggdrasil.auth.AuthorizationRegistry;
 import org.hyperagents.yggdrasil.auth.model.ContextBasedAuthorization;
+import org.hyperagents.yggdrasil.context.http.Utils.Tuple;
 import org.hyperagents.yggdrasil.http.HttpEntityHandler;
 import org.hyperagents.yggdrasil.store.impl.RdfStoreFactory;
 import org.hyperagents.yggdrasil.websub.HttpNotificationVerticle;
@@ -102,11 +103,9 @@ public class RdfStoreVerticle extends AbstractVerticle {
    */
   private void handleCreateEntity(IRI requestIRI, Message<String> message)
       throws IllegalArgumentException, IOException {
-	// Create IRI for new entity
-    Graph entityGraph;
-
+	  // Create IRI for new entity
     String slug = message.headers().get(HttpEntityHandler.ENTITY_URI_HINT);
-//    String contentType = message.headers().get(HttpEntityHandler.CONTENT_TYPE);
+    // String contentType = message.headers().get(HttpEntityHandler.CONTENT_TYPE);
     String entityIRIString = generateEntityIRI(requestIRI.getIRIString(), slug);
 
     IRI entityIRI = store.createIRI(entityIRIString);
@@ -121,21 +120,26 @@ public class RdfStoreVerticle extends AbstractVerticle {
 //        entityGraph = store.stringToGraph(entityGraphStr, entityIRI, RDFSyntax.JSONLD);
 //      } else {
         entityGraphStr = entityGraphStr.replaceAll("<>", "<" + entityIRIString + ">");
-        entityGraph = store.stringToGraph(entityGraphStr, entityIRI, RDFSyntax.TURTLE);
+        Tuple<Graph, Model> entityReprTuple = store.stringToGraph(entityGraphStr, entityIRI, RDFSyntax.TURTLE);
 //      }
+
+      Graph entityGraph = entityReprTuple.getFirst();
+      Model entityModel = entityReprTuple.getSecond();
 
       // check to see if we can extract a Shared Context Access or Control Authorization from the entity graph
       // First create a eclipse.rdf4j.model from the org.apache.commons.rdf.api.Graph entityGraph
-      ModelBuilder builder = new ModelBuilder();
-      entityGraph.stream().forEach(triple -> builder.add(triple.getSubject().ntriplesString(),
-          triple.getPredicate().ntriplesString(), triple.getObject().ntriplesString()));
-      Model entityModel = builder.build();
+      // ModelBuilder builder = new ModelBuilder();
+      // entityGraph.stream().forEach(triple -> builder.add(triple.getSubject().ntriplesString(),
+      //     triple.getPredicate().ntriplesString(), triple.getObject().ntriplesString()));
+      // Model entityModel = builder.build();
 
       AuthorizationRegistry authRegistry = AuthorizationRegistry.getInstance();
       
       // extract the access authorizations from the entity Model, then register them with the AuthorizationRegistry
       List<ContextBasedAuthorization> accessAuthorizations = ContextBasedAuthorization.fromModel(entityModel);
-      accessAuthorizations.stream().forEach(auth -> authRegistry.addContextAuthorisation(entityIRI.getIRIString(), (ContextBasedAuthorization)auth));
+      for (ContextBasedAuthorization auth : accessAuthorizations) {
+        authRegistry.addContextAuthorisation(entityIRI.getIRIString(), auth);
+      }
 
       // create an all authorizations list by combining the access and control authorizations and use the list to create the document graph
       List<ContextBasedAuthorization> allAuthorizations = new ArrayList<>();
@@ -243,7 +247,8 @@ public class RdfStoreVerticle extends AbstractVerticle {
       if (message.body() == null || message.body().isEmpty()) {
         replyFailed(message);
       } else {
-        Graph entityGraph = store.stringToGraph(message.body(), requestIRI, RDFSyntax.TURTLE);
+        Tuple<Graph, Model> entityReprTuple = store.stringToGraph(message.body(), requestIRI, RDFSyntax.TURTLE);
+        Graph entityGraph = entityReprTuple.getFirst();
         store.updateEntityGraph(requestIRI, entityGraph);
 
         Optional<Graph> result = store.getEntityGraph(requestIRI);

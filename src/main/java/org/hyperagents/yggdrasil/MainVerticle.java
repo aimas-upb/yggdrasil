@@ -89,7 +89,7 @@ public class MainVerticle extends AbstractVerticle {
     // The configuration also includes a mapping of artifact URIs to the URI of access control policies (given as SHACL shapes) 
     // that govern access to the artifact
     JsonObject artifactPolicyConfig = new JsonObject()
-      .put("http://example.org/HueLamp", "file://" + baseResourcesFilePath + "/upb-hmas-context-access-condition-shapes.ttl");
+      .put("http://example.org/environments/upb_hmas/workspaces/precis/artifacts/light308", "file://" + baseResourcesFilePath + "/upb-hmas-context-access-condition-shapes.ttl");
     contextMgmtConfig.put("artifact-policies", artifactPolicyConfig);
 
     vertx.deployVerticle(new ContextMgmtVerticle(),

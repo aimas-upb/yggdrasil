@@ -71,7 +71,7 @@ public class HttpServerVerticle extends AbstractVerticle {
     
     // route all artifact action first through a WAC filter to check if the agent is authorized to perform the action
     Router wacRouter = Router.router(vertx);
-    wacRouter.route("/environments/:envid/workspaces/:wkspid/artifacts/:artid/*").handler(wacHandler::filterAccess);
+    wacRouter.route("/*").handler(wacHandler::filterAccess);
 
     Router artifactActionRouter = Router.router(vertx);
     artifactActionRouter.route("/*").handler(handler::handleAction);
@@ -80,6 +80,9 @@ public class HttpServerVerticle extends AbstractVerticle {
     wacRouter.mountSubRouter("/", artifactActionRouter);
 
     //router.route("/environments/:envid/workspaces/:wkspid/artifacts/:artid/*").handler(handler::handleAction);
+
+    // add the wacRouter as a subrouter for artifact affordances of the main router
+    router.mountSubRouter("/environments/:envid/workspaces/:wkspid/artifacts/:artid", wacRouter);
 
     // route artifact manual requests
     // TODO: this feature was implemented for the WWW2020 demo, a manual is any RDF graph

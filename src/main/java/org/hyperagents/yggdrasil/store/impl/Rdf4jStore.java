@@ -32,6 +32,7 @@ import org.eclipse.rdf4j.rio.helpers.JSONLDSettings;
 import org.eclipse.rdf4j.rio.helpers.StatementCollector;
 import org.eclipse.rdf4j.sail.memory.MemoryStore;
 import org.eclipse.rdf4j.sail.nativerdf.NativeStore;
+import org.hyperagents.yggdrasil.context.http.Utils;
 import org.hyperagents.yggdrasil.store.RdfStore;
 
 import io.vertx.core.json.JsonObject;
@@ -53,6 +54,8 @@ public class Rdf4jStore implements RdfStore {
         String storePath = config.getString("store-path", "data/");
         File dataDir = new File(storePath);
         repository = new SailRepository(new NativeStore(dataDir));
+
+        // TODO - check if any Authorized artifacts are already stored in the repository and populate the AuthorizationRegistry
       } else {
         repository = new SailRepository(new MemoryStore());
       }
@@ -161,7 +164,7 @@ public class Rdf4jStore implements RdfStore {
   }
 
   @Override
-  public Graph stringToGraph(String graphString, IRI baseIRI, RDFSyntax syntax) throws IllegalArgumentException, IOException {
+  public Utils.Tuple<Graph, Model> stringToGraph(String graphString, IRI baseIRI, RDFSyntax syntax) throws IllegalArgumentException, IOException {
     StringReader stringReader = new StringReader(graphString);
 
     RDFFormat format = RDFFormat.JSONLD;
@@ -185,7 +188,7 @@ public class Rdf4jStore implements RdfStore {
     finally {
       stringReader.close();
     }
-    return rdfImpl.asGraph(model);
+    return new Utils.Tuple<Graph,Model>(rdfImpl.asGraph(model), model);
   }
 
   public void addEntityGraph(IRI entityIri, Graph entityGraph) {

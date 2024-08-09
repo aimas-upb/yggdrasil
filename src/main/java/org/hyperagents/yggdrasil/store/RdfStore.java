@@ -6,6 +6,8 @@ import java.util.Optional;
 import org.apache.commons.rdf.api.Graph;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDFSyntax;
+import org.eclipse.rdf4j.model.Model;
+import org.hyperagents.yggdrasil.context.http.Utils;
 
 public interface RdfStore {
   public static final String BUS_ADDRESS = "org.hyperagents.yggdrasil.eventbus.rdfstore";
@@ -32,6 +34,6 @@ public interface RdfStore {
 
   String graphToString(Graph graph, RDFSyntax syntax) throws IllegalArgumentException, IOException;
 
-  Graph stringToGraph(String graphString, IRI baseIRI, RDFSyntax syntax) throws IllegalArgumentException, IOException;
+  Utils.Tuple<Graph, Model> stringToGraph(String graphString, IRI baseIRI, RDFSyntax syntax) throws IllegalArgumentException, IOException;
 
 }
