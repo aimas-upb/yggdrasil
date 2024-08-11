@@ -8,7 +8,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.eclipse.rdf4j.model.BNode;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
@@ -143,11 +142,12 @@ public class ContextBasedAuthorization {
     ModelBuilder builder = new ModelBuilder();
     builder.setNamespace("acl", ACL.NS);
     builder.setNamespace("rdf", RDF.NAMESPACE);
+    builder.setNamespace("cashmere", CASHMERE.CASHMERE_NS);
 
     ValueFactory rdfVals = SimpleValueFactory.getInstance();
     
     // create a blank node for the authorization instance
-    BNode authInstance = rdfVals.createBNode();
+    IRI authInstance = rdfVals.createIRI(CONTEXT_AUTH_INSTANCE_NAMESPACE + "node-" + rdfVals.createBNode().getID());
 
     // describe the authorization instance
     builder.add(authInstance, RDF.TYPE, CASHMERE.ContextBasedAuthorization);
@@ -167,7 +167,7 @@ public class ContextBasedAuthorization {
 
     // return a tuple of the authorization instance URI and the Model
     return new HashMap<IRI, Model>() {{
-      put(rdfVals.createIRI(CONTEXT_AUTH_INSTANCE_NAMESPACE + "node-" + authInstance.getID()), builder.build());
+      put(authInstance, builder.build());
     }};
   }
 

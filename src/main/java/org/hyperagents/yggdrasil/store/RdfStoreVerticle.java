@@ -243,6 +243,18 @@ public class RdfStoreVerticle extends AbstractVerticle {
 
   private void handleUpdateEntity(IRI requestIRI, Message<String> message)
       throws IllegalArgumentException, IOException {
+    
+    // Check to see if requestIRI contains a port number; if it does, remove it from the IRI
+    // To do so, split the request IRI into its domain and path parts; then, remove the port number from the domain part
+    String requestIRIString = requestIRI.getIRIString();
+    String domain = requestIRIString.substring(0, requestIRIString.indexOf("/", requestIRIString.indexOf("//") + 2));
+    String path = requestIRIString.substring(requestIRIString.indexOf("/", requestIRIString.indexOf("//") + 2));
+    // Use a regex to remove the port number from the domain part
+    domain = domain.replaceAll(":[0-9]+", "");
+    requestIRIString = domain + path;
+    requestIRI = store.createIRI(requestIRIString);
+    // TODO: fix this hack with the port number in the IRI
+    
     if (store.containsEntityGraph(requestIRI)) {
       if (message.body() == null || message.body().isEmpty()) {
         replyFailed(message);

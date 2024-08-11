@@ -66,8 +66,7 @@ public abstract class ContextAuthHypermediaArtifact extends HypermediaArtifact {
     @Override
     protected void setupOperations() throws CartagoException {
       super.setupOperations();
-
-      registerInteractionAffordances();
+      
       registerSharedContextAutorizations();
       HypermediaArtifactRegistry.getInstance().register(this);
     }
@@ -79,26 +78,31 @@ public abstract class ContextAuthHypermediaArtifact extends HypermediaArtifact {
             .addSecurityScheme(securityScheme)
             .addSemanticType("http://w3id.org/eve#Artifact")
             .addSemanticType(getSemanticType())
+            .addSemanticType(CASHMERE.ContextAuthorizedResource.stringValue())
             .addThingURI(getArtifactUri())
             .addGraph(metadata);
 
         // Before adding the action affordances, let us add the authorizations. We loop through the list of authorizations
         // and add the corresponding triples to the metadata graph. 
-        // TODO: Redefine the Authorization class to use the CASHMERE ontology
         ModelBuilder authorisationsModel = new ModelBuilder();
         for (ContextBasedAuthorization auth : getAuthorizations()) {
           Map<IRI, Model> authTriples = auth.toModel();
+          // We use authTriples.keySet().iterator().next() as the IRI identifying the authorization specification, 
+          // because we know that the authTriples map contains only one entry
+          IRI authIRI = authTriples.keySet().iterator().next();
           if (auth.getAccessTypes().contains(AuthorizationAccessType.CONTROL)){
-            // If the access type is control, we add the hasControlAuthorization property. We use authTriples.keySet().iterator().next() because
-            // we know that the authTriples map contains only one entry
-            authorisationsModel.add(getArtifactUri(), CASHMERE.hasControlAuthorization, authTriples.keySet().iterator().next());  
+            // If the access type is control, we add the hasControlAuthorization property. 
+            authorisationsModel.add(getArtifactUri(), CASHMERE.hasControlAuthorization, authIRI);  
           }
           else {
             // Otherwise, we add the hasAccessAuthorization property
-            authorisationsModel.add(getArtifactUri(), CASHMERE.hasAccessAuthorization, authTriples.keySet().iterator().next());
+            authorisationsModel.add(getArtifactUri(), CASHMERE.hasAccessAuthorization, authIRI);
           }
-          // We can write this line because we know that the authTriples map contains only one entry
-          tdBuilder.addGraph(authTriples.values().iterator().next());
+          
+          // Add all contents of authModel to the authorisationsModel
+          Model authModel = authTriples.get(authIRI);
+          authModel.forEach(statement -> authorisationsModel.add(statement.getSubject(), statement.getPredicate(), statement.getObject()));
+          
         }
         tdBuilder.addGraph(authorisationsModel.build());
         
@@ -117,6 +121,8 @@ public abstract class ContextAuthHypermediaArtifact extends HypermediaArtifact {
             .setNamespace("dct", "http://purl.org/dc/terms/")
             .setNamespace("js", "https://www.w3.org/2019/wot/json-schema#")
             .setNamespace("eve", "http://w3id.org/eve#")
+            .setNamespace("cashmere", CASHMERE.CASHMERE_NS)
+            .setNamespace("acl", CASHMERE.ACL_NS)
             .write();
   }
 }

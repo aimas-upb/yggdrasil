@@ -179,7 +179,11 @@ public class HttpEntityHandler {
     HypermediaArtifactRegistry artifactRegistry = HypermediaArtifactRegistry.getInstance();
 
     String artifactIri = artifactRegistry.getHttpArtifactsPrefix(wkspName) + artifactName;
-    String actionName = artifactRegistry.getActionName(request.rawMethod(), request.absoluteURI());
+    
+    // Because the port is not part of the action URI, we need to remove it from the absolute URI of the request
+    String actionURI = request.absoluteURI().replace(":" + request.localAddress().port(), "");
+    String actionName = artifactRegistry.getActionName(request.rawMethod(), actionURI);
+
 
     DeliveryOptions options = new DeliveryOptions()
         .addHeader(REQUEST_METHOD, RdfStore.GET_ENTITY)
