@@ -1,7 +1,7 @@
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
-@prefix consert: <http://pervasive.semanticweb.org/ont/2017/07/consert/core/> .
+@prefix consert: <http://pervasive.semanticweb.org/ont/2017/07/consert/core#> .
 @prefix ann: <http://pervasive.semanticweb.org/ont/2017/07/consert/annotation/> .
 
 @prefix acl: <http://www.w3.org/ns/auth/acl#> .
@@ -12,15 +12,15 @@
 @prefix ex: <http://example.org/> .
 
 
-cashmere:ContextBasedAccessCondition rdfs:subClassOf sh:NodeShape .
+# cashmere:ContextBasedAccessCondition rdfs:subClassOf sh:NodeShape .
 cashmere:ProfiledContextCondition rdfs:subClassOf sh:NodeShape .
 cashmere:ContextDomainCondition rdfs:subClassOf sh:NodeShape .
 
 # The access condition for the light308 resource
 ex:light308AccessCondition 
     a cashmere:ContextBasedAccessCondition ;
-    sh:targetNode cashmere:accessRequester ;
-    sh:and (
+    cashmere:targetEntity cashmere:accessRequester ;
+    cashmere:containsConditions (
         ex:UPBEmploymentCondition
         ex:Lab308MembershipCondition
     ) .
@@ -41,43 +41,45 @@ ex:UPBEmploymentCondition
         sh:path ann:hasAnnotation ;
         sh:class ann:TemporalValidityAnnotation ;
         sh:node [
-            a sh:NodeShape ;
-            sh:and (
-              [
-                a sh:PropertyShape ;
-                sh:path ann:startTime ;
-                sh:sparql [
-                  a sh:SPARQLConstraint ;
-                  sh:message "The employment validity of the accessRequester has to include the current moment." ;
-                  sh:prefixes xsd: ;
-                  sh:select """
-                    SELECT $this $PATH ?value
-                    WHERE {
-                      $this $PATH ?value .
-                      BIND (xsd:dateTime(NOW()) AS ?date)
-                      FILTER (?date > ?value)
-                    }
-                  """ ;
-                ] ;
-              ] 
-              [
+              a sh:NodeShape ;
+              sh:and (
+                [
+                  a sh:PropertyShape ;
+                  sh:path ann:startTime ;
+                  sh:maxCount 1 ;
+                  sh:datatype xsd:dateTime ;
+                  sh:sparql [
+                      a sh:SPARQLConstraint ;
+                      sh:message "The employment validity {$this} of the accessRequester has to start before the current moment." ;
+                      sh:select """
+                        SELECT $this ?value
+                        WHERE {
+                          $this $PATH ?value .
+                          BIND (xsd:dateTime(NOW()) AS ?now)
+                          FILTER (?now < ?value)
+                        }
+                      """ ;
+                  ] ;
+                ]
+                [
                   a sh:PropertyShape ;
                   sh:path ann:endTime ;
+                  sh:maxCount 1 ;
+                  sh:datatype xsd:dateTime ;
                   sh:sparql [
-                    a sh:SPARQLConstraint ;
-                    sh:message "The employment validity of the accessRequester has to include the current moment." ;
-                    sh:prefixes xsd: ;
-                    sh:select """
-                      SELECT $this $PATH ?value
-                      WHERE {
-                        $this $PATH ?value .
-                        BIND (xsd:dateTime(NOW()) AS ?date) 
-                        FILTER (?date < ?value)
-                      }
-                    """ ;
+                      a sh:SPARQLConstraint ;
+                      sh:message "The employment validity {$this} of the accessRequester has to end after the current moment." ;
+                      sh:select """
+                        SELECT $this ?value
+                        WHERE {
+                          $this $PATH ?value .
+                          BIND (xsd:dateTime(NOW()) AS ?now)
+                          FILTER (?now > ?value)
+                        }
+                      """ ;
                   ] ;
-              ]
-            ) ;
+                ]
+              ) ;
         ] ;
     ] .
 

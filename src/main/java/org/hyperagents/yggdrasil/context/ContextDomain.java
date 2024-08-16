@@ -2,12 +2,15 @@ package org.hyperagents.yggdrasil.context;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.List;
 import java.util.Optional;
 
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.jena.graph.Graph;
 import org.apache.jena.graph.Triple;
+import org.apache.jena.sparql.algebra.Op;
 import org.apache.jena.util.iterator.ExtendedIterator;
+import org.eclipse.rdf4j.common.iteration.Iterations;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
@@ -61,7 +64,7 @@ public class ContextDomain {
     private ContinuousQuery membershipRuleQuery;
     private DataStream<Graph> membershipRuleQueryResultStream;
 
-    // RDF store for the named graphs denoting the ContextDomainGroup memberships
+    // RDF store for the graph denoting the ContextDomainGroup memberships
     private SailRepository cdgMembershipRepo;
 
     /**
@@ -247,11 +250,27 @@ public class ContextDomain {
             // check if the statement is present in the repository
             return conn.hasStatement(stmt, false);
         } catch (Exception e) {
-            System.err.println("Error while verifying the membership of the agent " + accessRequesterURI + " in the ContextDomainGroup " + getContextDomainGroupURI() + ": " + e.getMessage());
+            LOGGER.error("Error while verifying the membership of the agent " + accessRequesterURI + " in the ContextDomainGroup " + getContextDomainGroupURI() + ": " + e.getMessage());
             return false;
         }
     }
 
+    public Optional<List<Statement>> getMembershipStatements() {
+        return getMembershipStatements(null);
+    }
+    
+    public Optional<List<Statement>> getMembershipStatements(String accessRequesterURI) {
+        try (RepositoryConnection conn = cdgMembershipRepo.getConnection()) {
+            if (accessRequesterURI == null)
+                return Optional.of(Iterations.asList(conn.getStatements(null, CASHMERE.memberIn, null)));
+            else 
+                return Optional.of(Iterations.asList(conn.getStatements(
+                    conn.getValueFactory().createIRI(accessRequesterURI), CASHMERE.memberIn, null)));
+        } catch (Exception e) {
+            LOGGER.error("Error while retrieving the membership statements of the ContextDomainGroup " + getContextDomainGroupURI() + ": " + e.getMessage());
+            return Optional.empty();
+        }
+    }
 
     // =============================================================================================================
     // Auxiliary functions to get the URI of the ContextDomainGroup from the URI of the ContextDomain and vice versa

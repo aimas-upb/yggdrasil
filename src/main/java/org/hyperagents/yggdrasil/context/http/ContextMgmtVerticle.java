@@ -1,5 +1,6 @@
 package org.hyperagents.yggdrasil.context.http;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -258,32 +259,96 @@ public class ContextMgmtVerticle extends AbstractVerticle {
 
 
     private void validateContextBasedAccess(Message<String> message) {
+        // To validate context access we must bring together the static, profiled and dynamic context information
+        // from their respective repositories and validate the access request against them.
+        // In the current version we assume that all context repositories are handled at platform level and are 
+        // available directly to the ContextMgmtVerticle.
+        // TODO: handle the case when the context repositories are managed by the artifacts themselves.
+
         // Extract from the message the URI of the agent requesting access and the URI of the artifact being accessed
         String accessRequesterURI = message.headers().get(ContextMgmtVerticle.ACCESS_REQUESTER_URI);
         String accessedArtifactURI = message.headers().get(ContextMgmtVerticle.ACCESSED_RESOURCE_URI);
-
-        // Validate the access request against the static, profiled and dynamic context information
-        boolean staticContextValidation = validateStaticContext(accessRequesterURI, accessedArtifactURI);
-        if (!staticContextValidation) {
-            LOGGER.info("Access to artifact " + accessedArtifactURI + " denied for access requester: " 
-                + accessRequesterURI + ". Reason: Static Context validation failed.");
-            message.fail(403, "Access denied. Reason: Static Context validation failed.");
+        
+        // If the artifact is not access protected, allow access by default
+        if (!isAccessProtected(accessedArtifactURI)) {
+            message.reply(true);
+            LOGGER.info("Access to artifact " + accessedArtifactURI + " allowed for access requester: " 
+                        + accessRequesterURI + ". Reason: No access conditions found.");
             return;
         }
 
-        boolean profiledContextValidation = validateProfiledContext(accessRequesterURI, accessedArtifactURI);
-        if (!profiledContextValidation) {
-            LOGGER.info("Access to artifact " + accessedArtifactURI + " denied for access requester: " 
-                + accessRequesterURI + ". Reason: Profiled Context validation failed.");
-            message.fail(403, "Access denied. Reason: Profiled Context validation failed.");
-            return;
-        }
+        // Create an in-memory RDF store that will contain the union of the static, profiled and dynamic context information
+        // The store will be set up as a ShaclSail object to allow for SHACL validation of the access conditions against the context information
+        ShaclSail shaclSail = new ShaclSail(new MemoryStore());
+        SailRepository contextDataRepo = new SailRepository(shaclSail);
+        contextDataRepo.init();
 
-        boolean dynamicContextValidation = validateDynamicContext(accessRequesterURI, accessedArtifactURI);
-        if (!dynamicContextValidation) {
-            LOGGER.info("Access to artifact " + accessedArtifactURI + " denied for access requester: " 
-                + accessRequesterURI + ". Reason: Dynamic Context validation failed.");
-            message.fail(403, "Access denied. Reason: Dynamic Context validation failed.");
+        // start adding the static context information to the validationDataRepo
+        addStaticContext(contextDataRepo, accessedArtifactURI, accessRequesterURI);
+
+        // start adding the profiled context information to the validationDataRepo
+        addProfiledContext(contextDataRepo, accessedArtifactURI, accessRequesterURI);
+
+        // start adding the dynamic context information to the validationDataRepo
+        addDynamicContext(contextDataRepo, accessedArtifactURI, accessRequesterURI);
+
+        // for debugging purposes, serialize the contents of the validationDataRepo into a temporary turtle file
+        File tempValidationDataFile = new File("/home/alex/OneDrive/AI-MAS/projects/2022-CASHMERE/dev/yggdrasil-cashmere/src/test/resources/contextDataRepo.ttl");
+        Utils.serializeSailRepository(contextDataRepo, tempValidationDataFile);
+
+        // now we need to add the SHACL shapes graph containing the access conditions for the artifact to the validationDataRepo
+        Optional<List<Statement>> accessConditions = getAccessConditions(accessedArtifactURI);
+        if (accessConditions.isPresent()) {
+            // create a Validation Repository as a ShaclSail in memory store
+            ShaclSail shaclSailValidation = new ShaclSail(new MemoryStore());
+            SailRepository validationRepo = new SailRepository(shaclSailValidation);
+            validationRepo.init();
+
+            // Replace the `cashmere:accessRequester` object placeholder in the access conditions with the actual accessRequesterURI
+            List<Statement> customAccessConditions = customizeAccessConditions(accessConditions.get(), accessRequesterURI, accessedArtifactURI);
+            try (RepositoryConnection conn = validationRepo.getConnection()) {
+                // load the access conditions into the profiledContextRepo, under the RDF4J.SHACL_SHAPE_GRAPH context
+                conn.begin();
+                conn.clear(RDF4J.SHACL_SHAPE_GRAPH);
+                conn.add(customAccessConditions, RDF4J.SHACL_SHAPE_GRAPH);
+                conn.commit();
+                
+                // for debug: serialize the contents of the validationRepo into a temporary turtle file
+                File tempValidationRepoFile = new File("/home/alex/OneDrive/AI-MAS/projects/2022-CASHMERE/dev/yggdrasil-cashmere/src/test/resources/validationRepo.ttl");
+                Utils.serializeRepoConnection(conn, tempValidationRepoFile, RDF4J.SHACL_SHAPE_GRAPH);
+
+                conn.begin();
+
+                // load the contents of the contextDataRepo into the validationRepo
+                conn.add(contextDataRepo.getConnection().getStatements(null, null, null, false));
+                
+                // validate the access conditions against the profiled context repository
+                conn.commit();
+
+                LOGGER.info("Access to artifact " + accessedArtifactURI + " allowed for access requester: " 
+                        + accessRequesterURI + ". Reason: Context validation successful.");
+            } catch (RepositoryException e) {
+                Throwable cause = e.getCause();
+                if (cause instanceof ValidationException) {
+                    LOGGER.info("Access to artifact " + accessedArtifactURI + " denied for access requester: " 
+                        + accessRequesterURI + ". Reason:  " + cause.getMessage()); 
+                } else {
+                    LOGGER.error("Error validating the access conditions of artifact: " + accessedArtifactURI 
+                        + " for requester: " + accessRequesterURI +  " against the profiled context repository: " + e.getMessage());
+                }
+
+                // in case of error, deny access
+                message.fail(403, "Access denied. Reason: " + cause.getMessage());
+            }
+            finally {
+                // close the validationRepo
+                validationRepo.shutDown();
+            }
+        }
+        else {
+            // If no access conditions are found, allow access by default
+            LOGGER.info("No access conditions found in policy for artifact " + accessedArtifactURI + ". Access allowed by default.");
+            message.reply(true);
             return;
         }
 
@@ -291,71 +356,53 @@ public class ContextMgmtVerticle extends AbstractVerticle {
         message.reply(true);
     }
 
-
-    private boolean validateStaticContext(String accessRequesterURI, String accessedArtifactURI) {
-        // TODO: this remains to be implemented properly. For now, we just log the request and return a success message.
-        LOGGER.info("Validating Static Context...");
-        
-        // by default, we allow access
-        return true;
+    private void addStaticContext(SailRepository contextDataRepo, String accessedArtifactURI, String accessRequesterURI) {
+        try (RepositoryConnection conn = contextDataRepo.getConnection()) {
+            // load the contents of the staticContextRepo into the validationDataRepo
+            conn.add(staticContextRepo.getConnection().getStatements(null, null, null, false));
+        } catch (RepositoryException e) {
+            LOGGER.error("Error loading the static context information into the validation data repository: " + e.getMessage());
+        }
     }
 
-    // ============================================================================
-    // ======================== Profiled Context Validation =======================
-    // ============================================================================
-
-    private boolean validateProfiledContext(String accessRequesterURI, String accessedArtifactURI) {
-        
-        // check if the artifact is protected by access conditions    
-        if (isAccessProtected(accessedArtifactURI)) {
-            // create a new ShaclSail object and set it up with the contextAccessConditionsRepo
-            ShaclSail shaclSail = new ShaclSail(new MemoryStore());
-            SailRepository validationRepo = new SailRepository(shaclSail);
-            validationRepo.init();
-            
-            Optional<List<Statement>> accessConditions = getAccessConditions(accessedArtifactURI);
-            if (accessConditions.isPresent()) {
-                
-                List<Statement> customAccessConditions = customizeAccessConditions(accessConditions.get(), accessRequesterURI, accessedArtifactURI);
-
-                try (RepositoryConnection conn = validationRepo.getConnection()) {
-                    // load the access conditions into the profiledContextRepo, under the RDF4J.SHACL_SHAPE_GRAPH context
-                    conn.begin();
-                    conn.clear(RDF4J.SHACL_SHAPE_GRAPH);
-                    conn.add(customAccessConditions, RDF4J.SHACL_SHAPE_GRAPH);
-
-                    // load the contents of the profiledContextRepo into the validationRepo
-                    conn.add(profiledContextRepo.getConnection().getStatements(null, null, null, false));
-                    
-                    // validate the access conditions against the profiled context repository
-                    conn.commit();
-
-                    // if the validation is successful, allow access
-                    return true;
-                } catch (RepositoryException e) {
-                    Throwable cause = e.getCause();
-                    if (cause instanceof ValidationException) {
-                        LOGGER.info("Access to artifact " + accessedArtifactURI + " denied for access requester: " 
-                            + accessRequesterURI + ". Reason:  " + cause.getMessage()); 
-                    } else {
-                        LOGGER.error("Error validating the access conditions of artifact: " + accessedArtifactURI 
-                            + " for requester: " + accessRequesterURI +  " against the profiled context repository: " + e.getMessage());
-                    }
-
-                    // in case of error, deny access
-                    return false;
-                }
-                
-            } else {
-                // allow access by default
-                return true;
-            }
-        } 
-        else {
-            // allow access by default
-            return true;
+    private void addProfiledContext(SailRepository contextDataRepo, String accessedArtifactURI, String accessRequesterURI) {
+        try (RepositoryConnection conn = contextDataRepo.getConnection()) {
+            // load the contents of the profiledContextRepo into the validationDataRepo
+            conn.add(profiledContextRepo.getConnection().getStatements(null, null, null, false));
+        } catch (RepositoryException e) {
+            LOGGER.error("Error loading the profiled context information into the validation data repository: " + e.getMessage());
         }
-    
+    }
+
+    private void addDynamicContext(SailRepository contextDataRepo, String accessedArtifactURI, String accessRequesterURI) {
+        // This method is not yet implemented. It should load the dynamic context information into the validationDataRepo.
+        // The dynamic context information is stored in RDF streams that are managed by the ContextMgmtVerticle.
+        // The RDF streams are identified by the URIs of the dynamic ContextAssertions.
+        // The dynamic context information is updated by the artifacts themselves.
+        // The dynamic context information is used to validate the access request against the dynamic context conditions.
+        Optional<List<String>> contextDomainGroupURIs = getContextDomainGroupURIs(accessedArtifactURI, accessRequesterURI);
+        
+        if (contextDomainGroupURIs.isPresent()) {
+            for (String ctxGroupURI : contextDomainGroupURIs.get()) {
+                // get the ContextDomain URI from the contextDomainGroupURI
+                String ctxDomainURI = ContextDomain.getDomainFromGroup(ctxGroupURI);
+
+                // get the ContextDomain object from the contextDomains map
+                ContextDomain ctxDomain = contextDomains.get(ctxDomainURI);
+                
+                // get the context domain membership statements from the context domain object
+                Optional<List<Statement>> membershipStatements = ctxDomain.getMembershipStatements();
+                
+                // add the membership statements to the validationDataRepo
+                if (membershipStatements.isPresent()) {
+                    try (RepositoryConnection conn = contextDataRepo.getConnection()) {
+                        conn.add(membershipStatements.get());
+                    } catch (RepositoryException e) {
+                        LOGGER.error("Error loading the dynamic context information into the validation data repository: " + e.getMessage());
+                    }
+                }
+            }
+        }
     }
 
     // ============================================================================
@@ -387,42 +434,4 @@ public class ContextMgmtVerticle extends AbstractVerticle {
         return Optional.empty();
     }
 
-    private boolean validateDynamicContext(String accessRequesterURI, String accessedArtifactURI) {
-        // This validation requires to first identify if the artifact is protected by ContextDomainConditions.
-        // This must be checked within the named graph of the contextAccessConditionsRepo that contains the access conditions for the artifact.
-        // Specifically, we must retrieve all the instances of `cashmere:ContextDomainCondition` and retrieve for them the ContextDomainGroup they reference 
-        // through the RDF property path `sh:property / sh:hasValue`.
-        
-        // check if the artifact is protected by access conditions
-        if (isAccessProtected(accessedArtifactURI)) {
-            Optional<List<String>> contextDomainGroupURIs = getContextDomainGroupURIs(accessedArtifactURI, accessRequesterURI);
-            if (contextDomainGroupURIs.isPresent()) {
-                // iterate over the contextDomainGroupURIs 
-                for (String ctxGroupURI : contextDomainGroupURIs.get()) {
-                    // get the ContextDomain URI from the contextDomainGroupURI
-                    String ctxDomainURI = ContextDomain.getDomainFromGroup(ctxGroupURI);
-
-                    // get the ContextDomain object from the contextDomains map
-                    ContextDomain ctxDomain = contextDomains.get(ctxDomainURI);
-                    if (ctxDomain != null) {
-                        // check if the accessRequesterURI is a member of the group
-                        if (!ctxDomain.verifyMembership(accessRequesterURI)) {
-                            // if for at least one ContextDomain the accessRequesterURI is not a member of the group, deny access
-                            return false;
-                        }
-                    }
-                }
-
-                // if the accessRequesterURI is a member of all the ContextDomainGroups, allow access
-                return true;
-            } else {
-                // If there are no ContextDomainConditions for the artifact, allow access by default
-                return true;
-            }
-        }
-        else {
-            // allow access by default
-            return true;
-        }
-    }
 }

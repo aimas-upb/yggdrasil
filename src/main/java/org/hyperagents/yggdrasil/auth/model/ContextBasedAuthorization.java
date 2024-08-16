@@ -32,6 +32,9 @@ public class ContextBasedAuthorization {
   private Optional<String> entityName = Optional.empty();
   private String accessConditionsShapeURI;
 
+  // the IRI of this authorization instance
+  private String authIRI;
+
   /**
    * Constructor for a context-based access authorization specifying the protected web resource, the access type, 
    * the requester type (single agent, agent class, agent group) and the SHACL Shapes graph specifying the Context-Based Access Conditions
@@ -147,7 +150,10 @@ public class ContextBasedAuthorization {
     ValueFactory rdfVals = SimpleValueFactory.getInstance();
     
     // create a blank node for the authorization instance
-    IRI authInstance = rdfVals.createIRI(CONTEXT_AUTH_INSTANCE_NAMESPACE + "node-" + rdfVals.createBNode().getID());
+    if (authIRI == null) {
+      authIRI = CONTEXT_AUTH_INSTANCE_NAMESPACE + "node-" + rdfVals.createBNode().getID();
+    }
+    IRI authInstance = rdfVals.createIRI(authIRI);
 
     // describe the authorization instance
     builder.add(authInstance, RDF.TYPE, CASHMERE.ContextBasedAuthorization);
