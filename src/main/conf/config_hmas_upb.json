@@ -1,4 +1,5 @@
 {
+  "max_worker_execute_time" : 600000,
   "http-config" : {
     "host" : "example.org",
     "port" : 8080,

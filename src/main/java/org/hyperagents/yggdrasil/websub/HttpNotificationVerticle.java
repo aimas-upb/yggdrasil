@@ -48,7 +48,7 @@ public class HttpNotificationVerticle extends AbstractVerticle {
 
         if (entityIRI != null && !entityIRI.isEmpty()) {
           String changes = (String) message.body();
-          LOGGER.info("Dispatching notifications for: " + entityIRI + ", changes: " + changes);
+          // LOGGER.info("Dispatching notifications for: " + entityIRI + ", changes: " + changes);
 
           WebClient client = WebClient.create(vertx);
 

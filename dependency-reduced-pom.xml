@@ -121,6 +121,7 @@
     <maven.compiler.source>8</maven.compiler.source>
     <vertx.version>3.9.0</vertx.version>
     <main.class.name>io.vertx.core.Launcher</main.class.name>
+    <rdf4j.version>3.7.4</rdf4j.version>
     <buildNumber>0.0.SNAPSHOT</buildNumber>
   </properties>
 </project>

@@ -7,6 +7,7 @@ import org.hyperagents.yggdrasil.http.HttpServerVerticle;
 import org.hyperagents.yggdrasil.store.RdfStoreVerticle;
 import org.hyperagents.yggdrasil.websub.HttpNotificationVerticle;
 import java.io.File;
+import java.util.concurrent.TimeUnit;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.DeploymentOptions;
@@ -19,17 +20,20 @@ public class MainVerticle extends AbstractVerticle {
     // Deploy the main HTTP server verticle for this Yggdrasil instance
     vertx.deployVerticle(new HttpServerVerticle(),
         new DeploymentOptions().setConfig(config())
+        .setMaxWorkerExecuteTime(600000).setMaxWorkerExecuteTimeUnit(TimeUnit.MILLISECONDS)
       );
 
     // Deploy the RDF store verticle for this Yggdrasil instance
     vertx.deployVerticle(new RdfStoreVerticle(),
         new DeploymentOptions().setWorker(true).setConfig(config())
+        .setMaxWorkerExecuteTime(600000).setMaxWorkerExecuteTimeUnit(TimeUnit.MILLISECONDS)
       );
 
     // Deploy the HTTP notification verticle that allows for modifications 
     // to the internal state of an artifact to reflect in its RDF representation and vice versa
     vertx.deployVerticle(new HttpNotificationVerticle(),
         new DeploymentOptions().setWorker(true).setConfig(config())
+        .setMaxWorkerExecuteTime(600000).setMaxWorkerExecuteTimeUnit(TimeUnit.MILLISECONDS)
       );
 
     JsonObject knownArtifacts = new JsonObject()
@@ -46,6 +50,7 @@ public class MainVerticle extends AbstractVerticle {
     // Deploy the Cartago verticle
     vertx.deployVerticle(new CartagoVerticle(),
         new DeploymentOptions().setWorker(true).setConfig(cartagoConfig)
+        .setMaxWorkerExecuteTime(600000).setMaxWorkerExecuteTimeUnit(TimeUnit.MILLISECONDS)
       );
     
     // Deploy a verticle to handle context management.
@@ -94,11 +99,13 @@ public class MainVerticle extends AbstractVerticle {
 
     vertx.deployVerticle(new ContextMgmtVerticle(),
         new DeploymentOptions().setWorker(true).setConfig(contextMgmtConfig)
+        .setMaxWorkerExecuteTime(600000).setMaxWorkerExecuteTimeUnit(TimeUnit.MILLISECONDS)
       );
 
     // Deploy the WAC verticle
     vertx.deployVerticle(new WACVerticle(),
         new DeploymentOptions().setWorker(true).setConfig(config())
+        .setMaxWorkerExecuteTime(600000).setMaxWorkerExecuteTimeUnit(TimeUnit.MILLISECONDS)
       );
   }
 }

@@ -9,6 +9,7 @@
 
     <properties>
         <vertx.version>3.9.0</vertx.version>
+        <rdf4j.version>3.7.4</rdf4j.version>
         <main.class.name>io.vertx.core.Launcher</main.class.name>
         <main.verticle.name>org.hyperagents.yggdrasil.MainVerticle</main.verticle.name>
         <maven.compiler.source>8</maven.compiler.source>
@@ -83,42 +84,42 @@
         <dependency>
             <groupId>org.eclipse.rdf4j</groupId>
             <artifactId>rdf4j-model</artifactId>
-            <version>3.3.0</version>
+            <version>${rdf4j.version}</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.rdf4j</groupId>
             <artifactId>rdf4j-repository-sail</artifactId>
-            <version>3.3.0</version>
+            <version>${rdf4j.version}</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.rdf4j</groupId>
             <artifactId>rdf4j-repository-sparql</artifactId>
-            <version>3.3.0</version>
+            <version>${rdf4j.version}</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.rdf4j</groupId>
             <artifactId>rdf4j-sail-memory</artifactId>
-            <version>3.3.0</version>
+            <version>${rdf4j.version}</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.rdf4j</groupId>
             <artifactId>rdf4j-sail-nativerdf</artifactId>
-            <version>3.3.0</version>
+            <version>${rdf4j.version}</version>
         </dependency>
         <dependency>
 		    <groupId>org.eclipse.rdf4j</groupId>
 		    <artifactId>rdf4j-repository-manager</artifactId>
-		    <version>3.3.0</version>
+		    <version>${rdf4j.version}</version>
 		</dependency>
 		<dependency>
 		    <groupId>org.eclipse.rdf4j</groupId>
 		    <artifactId>rdf4j-shacl</artifactId>
-		    <version>3.3.0</version>
+		    <version>${rdf4j.version}</version>
 		</dependency>
         <dependency>
 		    <groupId>org.eclipse.rdf4j</groupId>
 		    <artifactId>rdf4j-rio-trig</artifactId>
-		    <version>3.3.0</version>
+		    <version>${rdf4j.version}</version>
 		</dependency>
         
         <!-- Apache Commons Dependencies -->

@@ -1,7 +1,9 @@
 package org.hyperagents.yggdrasil.context.http;
 
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
+import java.io.Reader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
@@ -18,6 +20,7 @@ import org.eclipse.rdf4j.model.vocabulary.RDF4J;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.sail.SailRepository;
+import org.eclipse.rdf4j.repository.sail.SailRepositoryConnection;
 import org.eclipse.rdf4j.rio.RDFFormat;
 import org.eclipse.rdf4j.rio.RDFParseException;
 import org.eclipse.rdf4j.sail.memory.MemoryStore;
@@ -234,7 +237,7 @@ public class ContextMgmtVerticle extends AbstractVerticle {
 
         // get the statements in the named graph
         try (RepositoryConnection conn = contextAccessConditionsRepo.getConnection()) {
-            return Optional.of(Iterations.asList(conn.getStatements(null, null, null, false, conn.getValueFactory().createIRI(artifactURI))));
+            return Optional.of(Iterations.asList(conn.getStatements(null, null, null, true, conn.getValueFactory().createIRI(artifactURI))));
         } catch (RepositoryException e) {
             LOGGER.error("Error accessing the context access conditions repository: " + e.getMessage());
             return Optional.empty();
@@ -279,8 +282,7 @@ public class ContextMgmtVerticle extends AbstractVerticle {
 
         // Create an in-memory RDF store that will contain the union of the static, profiled and dynamic context information
         // The store will be set up as a ShaclSail object to allow for SHACL validation of the access conditions against the context information
-        ShaclSail shaclSail = new ShaclSail(new MemoryStore());
-        SailRepository contextDataRepo = new SailRepository(shaclSail);
+        SailRepository contextDataRepo = new SailRepository(new MemoryStore());
         contextDataRepo.init();
 
         // start adding the static context information to the validationDataRepo
@@ -292,42 +294,44 @@ public class ContextMgmtVerticle extends AbstractVerticle {
         // start adding the dynamic context information to the validationDataRepo
         addDynamicContext(contextDataRepo, accessedArtifactURI, accessRequesterURI);
 
-        // for debugging purposes, serialize the contents of the validationDataRepo into a temporary turtle file
-        File tempValidationDataFile = new File("/home/alex/OneDrive/AI-MAS/projects/2022-CASHMERE/dev/yggdrasil-cashmere/src/test/resources/contextDataRepo.ttl");
-        Utils.serializeSailRepository(contextDataRepo, tempValidationDataFile);
-
         // now we need to add the SHACL shapes graph containing the access conditions for the artifact to the validationDataRepo
         Optional<List<Statement>> accessConditions = getAccessConditions(accessedArtifactURI);
         if (accessConditions.isPresent()) {
             // create a Validation Repository as a ShaclSail in memory store
             ShaclSail shaclSailValidation = new ShaclSail(new MemoryStore());
+            shaclSailValidation.setLogValidationViolations(true);
+            shaclSailValidation.setGlobalLogValidationExecution(true);
+            shaclSailValidation.setRdfsSubClassReasoning(true);
             SailRepository validationRepo = new SailRepository(shaclSailValidation);
             validationRepo.init();
 
             // Replace the `cashmere:accessRequester` object placeholder in the access conditions with the actual accessRequesterURI
             List<Statement> customAccessConditions = customizeAccessConditions(accessConditions.get(), accessRequesterURI, accessedArtifactURI);
-            try (RepositoryConnection conn = validationRepo.getConnection()) {
+            try (SailRepositoryConnection conn = validationRepo.getConnection()) {
                 // load the access conditions into the profiledContextRepo, under the RDF4J.SHACL_SHAPE_GRAPH context
                 conn.begin();
-                conn.clear(RDF4J.SHACL_SHAPE_GRAPH);
                 conn.add(customAccessConditions, RDF4J.SHACL_SHAPE_GRAPH);
-                conn.commit();
                 
                 // for debug: serialize the contents of the validationRepo into a temporary turtle file
                 File tempValidationRepoFile = new File("/home/alex/OneDrive/AI-MAS/projects/2022-CASHMERE/dev/yggdrasil-cashmere/src/test/resources/validationRepo.ttl");
                 Utils.serializeRepoConnection(conn, tempValidationRepoFile, RDF4J.SHACL_SHAPE_GRAPH);
-
-                conn.begin();
-
-                // load the contents of the contextDataRepo into the validationRepo
-                conn.add(contextDataRepo.getConnection().getStatements(null, null, null, false));
                 
+                // conn.commit();
+
+                // // load the contents of the contextDataRepo into the validationRepo
+                // conn.begin();
+                conn.add(contextDataRepo.getConnection().getStatements(null, null, null, false));
+
                 // validate the access conditions against the profiled context repository
                 conn.commit();
 
+                // for debug: serialize the contents of the validationRepo into a temporary turtle file
+                File tempDataRepoFile = new File("/home/alex/OneDrive/AI-MAS/projects/2022-CASHMERE/dev/yggdrasil-cashmere/src/test/resources/dataRepo.ttl");
+                Utils.serializeRepoConnection(conn, tempDataRepoFile);
+
                 LOGGER.info("Access to artifact " + accessedArtifactURI + " allowed for access requester: " 
                         + accessRequesterURI + ". Reason: Context validation successful.");
-            } catch (RepositoryException e) {
+            } catch (Exception e) {
                 Throwable cause = e.getCause();
                 if (cause instanceof ValidationException) {
                     LOGGER.info("Access to artifact " + accessedArtifactURI + " denied for access requester: " 

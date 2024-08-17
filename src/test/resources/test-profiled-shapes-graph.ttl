@@ -3,6 +3,7 @@
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 @prefix consert: <http://pervasive.semanticweb.org/ont/2017/07/consert/core#> .
 @prefix ann: <http://pervasive.semanticweb.org/ont/2017/07/consert/annotation/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
 
 @prefix acl: <http://www.w3.org/ns/auth/acl#> .
 @prefix hmas: <https://purl.org/hmas/> .
@@ -16,14 +17,44 @@
 cashmere:ProfiledContextCondition rdfs:subClassOf sh:NodeShape .
 cashmere:ContextDomainCondition rdfs:subClassOf sh:NodeShape .
 
+
 # The access condition for the light308 resource
-ex:light308AccessCondition 
-    a cashmere:ContextBasedAccessCondition ;
-    cashmere:targetEntity cashmere:accessRequester ;
-    cashmere:containsConditions (
-        ex:UPBEmploymentCondition
-        ex:Lab308MembershipCondition
-    ) .
+# ex:light308AccessCondition 
+#     a cashmere:ContextBasedAccessCondition ;
+#     cashmere:targetEntity ex:alexAgent ;
+#     cashmere:containsConditions (
+#         ex:UPBEmploymentCondition
+#         ex:Lab308MembershipCondition
+#     ) .
+
+
+# _:pref
+#   owl:imports sh: ;
+#   sh:declare [
+#     sh:prefix "ex" ;
+#     sh:namespace "http://example.org/"^^xsd:anyURI ;
+#   ] ;
+#   sh:declare [
+#     sh:prefix "xsd" ;
+#     sh:namespace "http://www.w3.org/2001/XMLSchema#"^^xsd:anyURI ;
+#   ] ;
+#   sh:declare [
+#     sh:prefix "rdf" ;
+#     sh:namespace "http://www.w3.org/1999/02/22-rdf-syntax-ns#"^^xsd:anyURI ;
+#   ] ;
+#   sh:declare [
+#     sh:prefix "rdfs" ;
+#     sh:namespace "http://www.w3.org/2000/01/rdf-schema#"^^xsd:anyURI ;
+#   ] ;
+#   sh:declare [
+#     sh:prefix "consert" ;
+#     sh:namespace "http://pervasive.semanticweb.org/ont/2017/07/consert/core#"^^xsd:anyURI ;
+#   ] ;
+#   sh:declare [
+#     sh:prefix "ann" ;
+#     sh:namespace "http://pervasive.semanticweb.org/ont/2017/07/consert/annotation/"^^xsd:anyURI ;
+#   ] .
+
 
 # The access condition based on the profiled information of the accessRequester - the employment condition
 ex:UPBEmploymentCondition
@@ -31,7 +62,7 @@ ex:UPBEmploymentCondition
     sh:targetClass ex:WorksAt ;
     sh:property [
         sh:path consert:assertionSubject ;
-        sh:hasValue cashmere:accessRequester ;
+        sh:hasValue ex:alexAgent ;
     ] ;
     sh:property [
         sh:path consert:assertionObject ;
@@ -51,8 +82,9 @@ ex:UPBEmploymentCondition
                   sh:sparql [
                       a sh:SPARQLConstraint ;
                       sh:message "The employment validity {$this} of the accessRequester has to start before the current moment." ;
+                      # sh:prefixes _:pref ;
                       sh:select """
-                        SELECT $this ?value
+                        SELECT $this (ann:startTime as ?path) ?value
                         WHERE {
                           $this $PATH ?value .
                           BIND (xsd:dateTime(NOW()) AS ?now)
@@ -69,8 +101,9 @@ ex:UPBEmploymentCondition
                   sh:sparql [
                       a sh:SPARQLConstraint ;
                       sh:message "The employment validity {$this} of the accessRequester has to end after the current moment." ;
+                      # sh:prefixes _:pref ;
                       sh:select """
-                        SELECT $this ?value
+                        SELECT $this (ann:endTime as ?path) ?value ?now
                         WHERE {
                           $this $PATH ?value .
                           BIND (xsd:dateTime(NOW()) AS ?now)
@@ -86,7 +119,7 @@ ex:UPBEmploymentCondition
 
 ex:Lab308MembershipCondition
     a cashmere:ContextDomainCondition, sh:NodeShape ;
-    sh:targetNode cashmere:accessRequester ;
+    sh:targetNode ex:alexAgent ;
     sh:property [
         sh:path cashmere:memberIn ;
         sh:hasValue <http://example.org/environments/upb_hmas/ctxmgmt/domains/lab308Domain/group> ;
