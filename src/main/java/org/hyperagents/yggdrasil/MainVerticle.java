@@ -3,6 +3,7 @@ package org.hyperagents.yggdrasil;
 import org.hyperagents.yggdrasil.auth.http.WACVerticle;
 import org.hyperagents.yggdrasil.cartago.CartagoVerticle;
 import org.hyperagents.yggdrasil.context.http.ContextMgmtVerticle;
+import org.hyperagents.yggdrasil.http.HttpInterfaceConfig;
 import org.hyperagents.yggdrasil.http.HttpServerVerticle;
 import org.hyperagents.yggdrasil.store.RdfStoreVerticle;
 import org.hyperagents.yggdrasil.websub.HttpNotificationVerticle;
@@ -17,6 +18,10 @@ public class MainVerticle extends AbstractVerticle {
 
   @Override
   public void start() {
+    HttpInterfaceConfig serverConfig = new HttpInterfaceConfig(config());
+    int port = serverConfig.getPort();
+    String host = serverConfig.getHost();
+    String baseUri = serverConfig.getBaseUri();
     // Deploy the main HTTP server verticle for this Yggdrasil instance
     vertx.deployVerticle(new HttpServerVerticle(),
         new DeploymentOptions().setConfig(config())
@@ -42,7 +47,7 @@ public class MainVerticle extends AbstractVerticle {
         // .put("http://example.org/Counter", "org.hyperagents.yggdrasil.cartago.artifacts.Counter")
         // .put("http://example.org/SpatialCalculator2D", "org.hyperagents.yggdrasil.cartago"
         //     + ".SpatialCalculator2D")
-        .put("http://example.org/HueLamp", "org.hyperagents.yggdrasil.auth.artifacts.AuthHue");
+        .put(baseUri + "/HueLamp", "org.hyperagents.yggdrasil.auth.artifacts.AuthHue");
 
     JsonObject cartagoConfig = config();
     cartagoConfig.put("known-artifacts", knownArtifacts);
@@ -63,7 +68,7 @@ public class MainVerticle extends AbstractVerticle {
     JsonObject contextMgmtConfig = config();
     
     // add the URI of the service to the configuration
-    contextMgmtConfig.put("service-uri", "http://example.org/environments/upb_hmas/ctxmgmt");
+    contextMgmtConfig.put("service-uri", baseUri + "/environments/upb_hmas/ctxmgmt");
 
     String testResourcesRelativePath = "src/test/resources";
     File testResourcesDir = new File(testResourcesRelativePath);
@@ -83,14 +88,14 @@ public class MainVerticle extends AbstractVerticle {
     contextMgmtConfig.put("profiled-context", "file://" + baseResourcesFilePath + "/upb-hmas-profiled-context.ttl");
 
     JsonObject dynamicContextConfig = new JsonObject()
-        .put("http://example.org/LocatedAt", "http://example.org/environments/upb_hmas/ctxmgmt/streams/LocatedAt");
+        .put(baseUri + "/LocatedAt", baseUri + "/environments/upb_hmas/ctxmgmt/streams/LocatedAt");
     contextMgmtConfig.put("dynamic-context", dynamicContextConfig);
 
     // The configuration also includes a map of context domains, 
     // each domain being identified by the URI of the ContextEntity playing the object role in the ContextAssertion
     JsonObject contextDomainConfig = new JsonObject()
-      .put("http://example.org/environments/upb_hmas/ctxmgmt/domains/lab308Domain", new JsonObject()
-        .put("assertion", "http://example.org/LocatedAt")
+      .put(baseUri + "/environments/upb_hmas/ctxmgmt/domains/lab308Domain", new JsonObject()
+        .put("assertion", baseUri + "/LocatedAt")
         .put("entity", "http://example.org/lab308")
         .put("stream", "http://example.org/environments/upb_hmas/ctxmgmt/streams/LocatedAt")
         .put("generatorClass", "org.hyperagents.yggdrasil.context.LocatedAtContextStream")
@@ -102,9 +107,9 @@ public class MainVerticle extends AbstractVerticle {
     // The configuration also includes a mapping of artifact URIs to the URI of access control policies (given as SHACL shapes) 
     // that govern access to the artifact
     JsonObject artifactPolicyConfig = new JsonObject()
-      .put("http://example.org/environments/upb_hmas/workspaces/precis/artifacts/light308", "file://" + baseResourcesFilePath + "/upb-hmas-context-access-condition-shapes.ttl");
+      .put(baseUri + "/environments/upb_hmas/workspaces/precis/artifacts/light308", "file://" + baseResourcesFilePath + "/upb-hmas-context-access-condition-shapes.ttl");
     contextMgmtConfig.put("artifact-policies", artifactPolicyConfig);
-
+    
     vertx.deployVerticle(new ContextMgmtVerticle(),
         new DeploymentOptions().setWorker(true).setConfig(contextMgmtConfig)
         .setMaxWorkerExecuteTime(600000).setMaxWorkerExecuteTimeUnit(TimeUnit.MILLISECONDS)
