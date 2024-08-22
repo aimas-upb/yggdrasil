@@ -69,10 +69,16 @@ public class MainVerticle extends AbstractVerticle {
     File testResourcesDir = new File(testResourcesRelativePath);
     String baseResourcesFilePath = testResourcesDir.getAbsolutePath();
 
+    // for it to work on windows
+
+    if (System.getProperty("os.name").toLowerCase().contains("windows")) {
+      baseResourcesFilePath = baseResourcesFilePath.replace("\\", "/");
+    }
+
     // The default configuration includes for this service contains local file URLs for the static context and profiled context graphs
     // deployed at the level of the Yggdrasil instance. The configuration can be modified to include other sources of context graphs.
-    contextMgmtConfig.put("static-context", "file://" + baseResourcesFilePath + "/upb-hmas-static-context.ttl");
-    contextMgmtConfig.put("profiled-context", "file://" + baseResourcesFilePath + "/upb-hmas-profiled-context.ttl");
+    contextMgmtConfig.put("static-context", "file:///" + baseResourcesFilePath + "/upb-hmas-static-context.ttl");
+    contextMgmtConfig.put("profiled-context", "file:///" + baseResourcesFilePath + "/upb-hmas-profiled-context.ttl");
 
     JsonObject dynamicContextConfig = new JsonObject()
         .put("http://example.org/LocatedAt", "http://example.org/environments/upb_hmas/ctxmgmt/streams/LocatedAt");
@@ -86,15 +92,15 @@ public class MainVerticle extends AbstractVerticle {
         .put("entity", "http://example.org/lab308")
         .put("stream", "http://example.org/environments/upb_hmas/ctxmgmt/streams/LocatedAt")
         .put("generatorClass", "org.hyperagents.yggdrasil.context.LocatedAtContextStream")
-        .put("rule", "file://" + baseResourcesFilePath + "/lab308membership.rspql")
-        .put("engine-config", "file://" + baseResourcesFilePath + "/lab308membership-csparql-engine-config.properties")
+        .put("rule", "file:///" + baseResourcesFilePath + "/lab308membership.rspql")
+        .put("engine-config", "file:///" + baseResourcesFilePath + "/lab308membership-csparql-engine-config.properties")
       );
     contextMgmtConfig.put("context-domains", contextDomainConfig);
     
     // The configuration also includes a mapping of artifact URIs to the URI of access control policies (given as SHACL shapes) 
     // that govern access to the artifact
     JsonObject artifactPolicyConfig = new JsonObject()
-      .put("http://example.org/environments/upb_hmas/workspaces/precis/artifacts/light308", "file://" + baseResourcesFilePath + "/upb-hmas-context-access-condition-shapes.ttl");
+      .put("http://example.org/environments/upb_hmas/workspaces/precis/artifacts/light308", "file:///" + baseResourcesFilePath + "/upb-hmas-context-access-condition-shapes.ttl");
     contextMgmtConfig.put("artifact-policies", artifactPolicyConfig);
 
     vertx.deployVerticle(new ContextMgmtVerticle(),
