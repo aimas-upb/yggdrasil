@@ -8,13 +8,13 @@
 
 <http://example.org/WorksAt> <http://www.w3.org/2000/01/rdf-schema#subclassOf> <http://pervasive.semanticweb.org/ont/2017/07/consert/core#BinaryContextAssertion> .
 
-_:genid-645c537d2da84dcf8da6e3d9db37a1cd-b1 a <http://example.org/WorksAt>;
+_:genid-355ca832295543149e98ad75c4038910-b1 a <http://example.org/WorksAt>;
   <http://pervasive.semanticweb.org/ont/2017/07/consert/core#assertionAcquisitionType>
     <http://pervasive.semanticweb.org/ont/2017/07/consert/core#Profiled>;
   <http://pervasive.semanticweb.org/ont/2017/07/consert/core#assertionSubject> <http://example.org/alexAgent>;
   <http://pervasive.semanticweb.org/ont/2017/07/consert/core#assertionObject> <http://example.org/upb>;
-  <http://pervasive.semanticweb.org/ont/2017/07/consert/annotation#hasAnnotation> _:genid-645c537d2da84dcf8da6e3d9db37a1cd-b2 .
+  <http://pervasive.semanticweb.org/ont/2017/07/consert/annotation#hasAnnotation> _:genid-355ca832295543149e98ad75c4038910-b2 .
 
-_:genid-645c537d2da84dcf8da6e3d9db37a1cd-b2 a <http://pervasive.semanticweb.org/ont/2017/07/consert/annotation#TemporalValidityAnnotation>;
+_:genid-355ca832295543149e98ad75c4038910-b2 a <http://pervasive.semanticweb.org/ont/2017/07/consert/annotation#TemporalValidityAnnotation>;
   <http://pervasive.semanticweb.org/ont/2017/07/consert/annotation#startTime> "2020-02-01T12:00:00Z"^^<http://www.w3.org/2001/XMLSchema#dateTime>;
   <http://pervasive.semanticweb.org/ont/2017/07/consert/annotation#endTime> "2051-07-25T23:59:59Z"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
