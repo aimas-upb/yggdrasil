@@ -248,12 +248,12 @@ public class HttpEntityHandler {
 
   // TODO: add payload validation
   public void handleUpdateEntity(RoutingContext routingContext) {
-    String entityIri = routingContext.request().absoluteURI();
+    HttpInterfaceConfig httpConfig = new HttpInterfaceConfig(Vertx.currentContext().config());
+    String entityIRI = httpConfig.getBaseUri() + routingContext.request().path();
     String entityRepresentation = routingContext.getBodyAsString();
-
     DeliveryOptions options = new DeliveryOptions()
         .addHeader(REQUEST_METHOD, RdfStore.UPDATE_ENTITY)
-        .addHeader(REQUEST_URI, entityIri);
+        .addHeader(REQUEST_URI, entityIRI);
 
     vertx.eventBus().request(RdfStore.BUS_ADDRESS, entityRepresentation, options,
         handleStoreReply(routingContext, HttpStatus.SC_OK));

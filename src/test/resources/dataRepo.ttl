@@ -1,0 +1,20 @@
+
+<http://example.org/alexAgent> a <http://pervasive.semanticweb.org/ont/2017/07/consert/core/ContextEntity>,
+    <http://xmlns.com/foaf/0.1/Agent>;
+  <https://aimas.cs.pub.ro/ont/cashmere#memberIn> <http://example.org/environments/upb_hmas/ctxmgmt/domains/lab308Domain/group> .
+
+<http://example.org/upb> a <http://pervasive.semanticweb.org/ont/2017/07/consert/core/ContextEntity>,
+    <http://example.org/Organization> .
+
+<http://example.org/WorksAt> <http://www.w3.org/2000/01/rdf-schema#subclassOf> <http://pervasive.semanticweb.org/ont/2017/07/consert/core#BinaryContextAssertion> .
+
+_:genid-8de070fc6d1c44728d3eabc57711c5da-b1 a <http://example.org/WorksAt>;
+  <http://pervasive.semanticweb.org/ont/2017/07/consert/core#assertionAcquisitionType>
+    <http://pervasive.semanticweb.org/ont/2017/07/consert/core#Profiled>;
+  <http://pervasive.semanticweb.org/ont/2017/07/consert/core#assertionSubject> <http://example.org/alexAgent>;
+  <http://pervasive.semanticweb.org/ont/2017/07/consert/core#assertionObject> <http://example.org/upb>;
+  <http://pervasive.semanticweb.org/ont/2017/07/consert/annotation#hasAnnotation> _:genid-8de070fc6d1c44728d3eabc57711c5da-b2 .
+
+_:genid-8de070fc6d1c44728d3eabc57711c5da-b2 a <http://pervasive.semanticweb.org/ont/2017/07/consert/annotation#TemporalValidityAnnotation>;
+  <http://pervasive.semanticweb.org/ont/2017/07/consert/annotation#startTime> "2020-02-01T12:00:00Z"^^<http://www.w3.org/2001/XMLSchema#dateTime>;
+  <http://pervasive.semanticweb.org/ont/2017/07/consert/annotation#endTime> "2051-07-25T23:59:59Z"^^<http://www.w3.org/2001/XMLSchema#dateTime> .

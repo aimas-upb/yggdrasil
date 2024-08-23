@@ -313,7 +313,7 @@ public class ContextMgmtVerticle extends AbstractVerticle {
                 conn.add(customAccessConditions, RDF4J.SHACL_SHAPE_GRAPH);
                 
                 // for debug: serialize the contents of the validationRepo into a temporary turtle file
-                File tempValidationRepoFile = new File("/home/alex/OneDrive/AI-MAS/projects/2022-CASHMERE/dev/yggdrasil-cashmere/src/test/resources/validationRepo.ttl");
+                File tempValidationRepoFile = new File("C:\\Users\\Relea\\Desktop\\yggdrasil\\yggdrasil\\src\\test\\resources\\validationRepo.ttl");
                 Utils.serializeRepoConnection(conn, tempValidationRepoFile, RDF4J.SHACL_SHAPE_GRAPH);
                 
                 // conn.commit();
@@ -326,7 +326,7 @@ public class ContextMgmtVerticle extends AbstractVerticle {
                 conn.commit();
 
                 // for debug: serialize the contents of the validationRepo into a temporary turtle file
-                File tempDataRepoFile = new File("/home/alex/OneDrive/AI-MAS/projects/2022-CASHMERE/dev/yggdrasil-cashmere/src/test/resources/dataRepo.ttl");
+                File tempDataRepoFile = new File("C:\\Users\\Relea\\Desktop\\yggdrasil\\yggdrasil\\src\\test\\resources\\dataRepo.ttl");
                 Utils.serializeRepoConnection(conn, tempDataRepoFile);
 
                 LOGGER.info("Access to artifact " + accessedArtifactURI + " allowed for access requester: " 
@@ -335,7 +335,7 @@ public class ContextMgmtVerticle extends AbstractVerticle {
                 Throwable cause = e.getCause();
                 if (cause instanceof ValidationException) {
                     LOGGER.info("Access to artifact " + accessedArtifactURI + " denied for access requester: " 
-                        + accessRequesterURI + ". Reason:  " + cause.getMessage()); 
+                        + accessRequesterURI + ". Reason:  " + cause.getMessage());
                 } else {
                     LOGGER.error("Error validating the access conditions of artifact: " + accessedArtifactURI 
                         + " for requester: " + accessRequesterURI +  " against the profiled context repository: " + e.getMessage());
