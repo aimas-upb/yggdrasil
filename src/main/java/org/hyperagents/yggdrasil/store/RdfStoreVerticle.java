@@ -44,7 +44,7 @@ public class RdfStoreVerticle extends AbstractVerticle {
 
   @Override
   public void start() {
-    store = RdfStoreFactory.createStore(config().getJsonObject("rdf-store", null));
+    store = RdfStoreFactory.createStore(config(), vertx);
     client = WebClient.create(vertx);
 
     EventBus eventBus = vertx.eventBus();
