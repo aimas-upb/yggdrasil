@@ -4,7 +4,11 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.rdf.api.Dataset;
@@ -32,9 +36,14 @@ import org.eclipse.rdf4j.rio.helpers.JSONLDSettings;
 import org.eclipse.rdf4j.rio.helpers.StatementCollector;
 import org.eclipse.rdf4j.sail.memory.MemoryStore;
 import org.eclipse.rdf4j.sail.nativerdf.NativeStore;
+import org.hyperagents.yggdrasil.cartago.CartagoVerticle;
+import org.hyperagents.yggdrasil.cartago.HypermediaArtifactRegistry;
 import org.hyperagents.yggdrasil.context.http.Utils;
+import org.hyperagents.yggdrasil.http.HttpEntityHandler;
 import org.hyperagents.yggdrasil.store.RdfStore;
 
+import io.vertx.core.Vertx;
+import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -45,13 +54,16 @@ public class Rdf4jStore implements RdfStore {
 
   private final RDF4J rdfImpl;
   private final Dataset dataset;
+  private Vertx vertx;
 
-  public Rdf4jStore(JsonObject config) {
+  public Rdf4jStore(JsonObject config, Vertx vertx) {
+    this.vertx = vertx;
     Repository repository;
-
+    JsonObject rdfStoreConfig = config.getJsonObject("rdf-store", null);
+    JsonObject httpConfig = config.getJsonObject("http-config", null);
     try {
-      if (config != null && !config.getBoolean("in-memory", false)) {
-        String storePath = config.getString("store-path", "data/");
+      if (rdfStoreConfig != null && !rdfStoreConfig.getBoolean("in-memory", false)) {
+        String storePath = rdfStoreConfig.getString("store-path", "data/");
         File dataDir = new File(storePath);
         repository = new SailRepository(new NativeStore(dataDir));
 
@@ -66,6 +78,97 @@ public class Rdf4jStore implements RdfStore {
 
     rdfImpl = new RDF4J();
     dataset = rdfImpl.asDataset(repository, RDF4J.Option.handleInitAndShutdown);
+    //Check if the dataset is empty
+    if (dataset.size() == 0) {
+      LOGGER.info("Empty RDF dataset created");
+    } else {
+      // save all the artifacts in the dataset in a list of Strings, extracting only the triples that contain the word "artifact"
+      //and save them subject-predicate-object format
+      
+      List<String> artifacts = dataset.stream().filter(triple -> triple.getSubject().toString().contains("artifact"))
+                                .map(triple -> "Subject:" + triple.getSubject().toString() + " "
+                                 + "Predicate:" + triple.getPredicate().toString() + " " 
+                                 + "Object:" + triple.getObject().toString()).collect(Collectors.toList());
+      
+      
+
+      // From the list of strings, extract only the unique subjects 
+      Set<String> uniqueSubjects = new HashSet<>(artifacts.stream()
+          .map(artifact -> artifact.substring(artifact.indexOf("Subject:") + 8, artifact.indexOf(" Predicate:")))
+          .collect(Collectors.toSet()));
+
+      //now for every unigue subject
+
+      for (String subject : uniqueSubjects) {
+        //take the object of the triple where the subject is the current subject and the predicate is "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+        //and print it in the file
+        String artefactType = "";
+        String artefactName = "";
+        final String workspaceName = subject.substring(subject.indexOf("workspaces/") + 11, subject.indexOf("/artifacts"));
+        final String envName = subject.substring(subject.indexOf("environments/") + 13, subject.indexOf("/workspaces"));;
+        String agent = httpConfig.getString("base-uri") + "alexAgent";
+        for (String artifact : artifacts) {
+          if (artifact.contains("Subject:" + subject + " "
+            + "Predicate:http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+            + " " + "Object:" + httpConfig.getString("base-uri"))) {
+            artefactType = artifact.substring(artifact.indexOf("Object:") + 7);
+          }
+          if (artifact.contains("Subject:" + subject + " "
+            + "Predicate:https://www.w3.org/2019/wot/td#title")) {
+            artefactName = artifact.substring(artifact.indexOf("Object:") + 7);
+            //remove the quotes from the name
+            artefactName = artefactName.substring(1, artefactName.length() - 1);
+          }
+        }
+        //extract the workspace name of the current subject
+        //he is beetween workspaces/ and /artifacts
+       
+        //Create a JsonObject named JsonRepresentation that contain artefactType, artefactName
+
+        JsonObject JsonRepresentation = new JsonObject().put("artifactName", artefactName).put("artifactClass", artefactType);
+
+        //now make a string out of representation
+        String representation = JsonRepresentation.toString();
+
+        LOGGER.info("Recreate the workspace " + workspaceName);
+
+        DeliveryOptions optionsWsp = new DeliveryOptions()
+          .addHeader(CartagoVerticle.AGENT_ID, agent)
+          .addHeader(CartagoVerticle.WORKSPACE_NAME, workspaceName)
+          .addHeader(HttpEntityHandler.REQUEST_METHOD, CartagoVerticle.CREATE_WORKSPACE)
+          .addHeader(CartagoVerticle.ENV_NAME, envName);
+
+        vertx.eventBus().request(CartagoVerticle.BUS_ADDRESS, representation, optionsWsp,
+          response -> {
+            if (response.succeeded()) {
+              HypermediaArtifactRegistry.getInstance().addWorkspace(envName, workspaceName);
+              LOGGER.info("CArtAgO workspace recreated");
+              //print the response
+              LOGGER.info(response.result().body());
+            } else {
+              LOGGER.error("CArtAgO workspace not recreated" + response.cause());
+            }
+          });
+          
+        LOGGER.info("Recreate the artifact " + subject);
+
+        DeliveryOptions options = new DeliveryOptions()
+          .addHeader(CartagoVerticle.AGENT_ID, agent)
+          .addHeader(CartagoVerticle.WORKSPACE_NAME, workspaceName)
+          .addHeader(HttpEntityHandler.REQUEST_METHOD, CartagoVerticle.CREATE_ARTIFACT)
+          .addHeader(CartagoVerticle.ARTIFACT_NAME, artefactName);
+
+          vertx.eventBus().request(CartagoVerticle.BUS_ADDRESS, representation, options,
+            response -> {
+              if (response.succeeded()) {
+                
+                LOGGER.info("CArtAgO artifact recreated");
+              } else {
+                LOGGER.error("CArtAgO artifact not recreated" + response.cause());
+              }
+            });
+      }
+    }
   }
 
   @Override

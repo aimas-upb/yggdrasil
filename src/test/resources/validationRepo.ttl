@@ -1,0 +1,82 @@
+
+<https://aimas.cs.pub.ro/ont/cashmere#ProfiledContextCondition> <http://www.w3.org/2000/01/rdf-schema#subClassOf>
+    <http://www.w3.org/ns/shacl#NodeShape> .
+
+<https://aimas.cs.pub.ro/ont/cashmere#ContextDomainCondition> <http://www.w3.org/2000/01/rdf-schema#subClassOf>
+    <http://www.w3.org/ns/shacl#NodeShape> .
+
+<http://example.org/light308AccessCondition> a <https://aimas.cs.pub.ro/ont/cashmere#ContextBasedAccessCondition>;
+  <https://aimas.cs.pub.ro/ont/cashmere#targetEntity> <http://example.org/alexAgent>;
+  <https://aimas.cs.pub.ro/ont/cashmere#containsConditions> _:node1i62t7ijhx1 .
+
+_:node1i62t7ijhx1 <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> <http://example.org/UPBEmploymentCondition>;
+  <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> _:node1i62t7ijhx2 .
+
+_:node1i62t7ijhx2 <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> <http://example.org/Lab308MembershipCondition>;
+  <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> <http://www.w3.org/1999/02/22-rdf-syntax-ns#nil> .
+
+<http://example.org/UPBEmploymentCondition> a <https://aimas.cs.pub.ro/ont/cashmere#ProfiledContextCondition>,
+    <http://www.w3.org/ns/shacl#NodeShape>;
+  <http://www.w3.org/ns/shacl#targetClass> <http://example.org/WorksAt>;
+  <http://www.w3.org/ns/shacl#property> _:node1i62t7ijhx3, _:node1i62t7ijhx4, _:node1i62t7ijhx5 .
+
+_:node1i62t7ijhx3 <http://www.w3.org/ns/shacl#path> <http://pervasive.semanticweb.org/ont/2017/07/consert/core#assertionSubject>;
+  <http://www.w3.org/ns/shacl#hasValue> <http://example.org/alexAgent> .
+
+_:node1i62t7ijhx4 <http://www.w3.org/ns/shacl#path> <http://pervasive.semanticweb.org/ont/2017/07/consert/core#assertionObject>;
+  <http://www.w3.org/ns/shacl#hasValue> <http://example.org/upb> .
+
+_:node1i62t7ijhx5 <http://www.w3.org/ns/shacl#path> <http://pervasive.semanticweb.org/ont/2017/07/consert/annotation#hasAnnotation>;
+  <http://www.w3.org/ns/shacl#class> <http://pervasive.semanticweb.org/ont/2017/07/consert/annotation#TemporalValidityAnnotation>;
+  <http://www.w3.org/ns/shacl#node> _:node1i62t7ijhx6 .
+
+_:node1i62t7ijhx6 a <http://www.w3.org/ns/shacl#NodeShape>;
+  <http://www.w3.org/ns/shacl#and> _:node1i62t7ijhx7 .
+
+_:node1i62t7ijhx7 <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> _:node1i62t7ijhx8;
+  <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> _:node1i62t7ijhx10 .
+
+_:node1i62t7ijhx8 a <http://www.w3.org/ns/shacl#PropertyShape>;
+  <http://www.w3.org/ns/shacl#path> <http://pervasive.semanticweb.org/ont/2017/07/consert/annotation#startTime>;
+  <http://www.w3.org/ns/shacl#maxCount> 1;
+  <http://www.w3.org/ns/shacl#datatype> <http://www.w3.org/2001/XMLSchema#dateTime>;
+  <http://www.w3.org/ns/shacl#sparql> _:node1i62t7ijhx9 .
+
+_:node1i62t7ijhx9 a <http://www.w3.org/ns/shacl#SPARQLConstraint>;
+  <http://www.w3.org/ns/shacl#message> "The employment validity {$this} of the accessRequester has to start before the current moment.";
+  <http://www.w3.org/ns/shacl#select> """
+                        SELECT $this ?value
+                        WHERE {
+                          $this $PATH ?value .
+                          BIND (xsd:dateTime(NOW()) AS ?now)
+                          FILTER (?now < ?value)
+                        }
+                      """ .
+
+_:node1i62t7ijhx10 <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> _:node1i62t7ijhx11;
+  <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> <http://www.w3.org/1999/02/22-rdf-syntax-ns#nil> .
+
+_:node1i62t7ijhx11 a <http://www.w3.org/ns/shacl#PropertyShape>;
+  <http://www.w3.org/ns/shacl#path> <http://pervasive.semanticweb.org/ont/2017/07/consert/annotation#endTime>;
+  <http://www.w3.org/ns/shacl#maxCount> 1;
+  <http://www.w3.org/ns/shacl#datatype> <http://www.w3.org/2001/XMLSchema#dateTime>;
+  <http://www.w3.org/ns/shacl#sparql> _:node1i62t7ijhx12 .
+
+_:node1i62t7ijhx12 a <http://www.w3.org/ns/shacl#SPARQLConstraint>;
+  <http://www.w3.org/ns/shacl#message> "The employment validity {$this} of the accessRequester has to end after the current moment.";
+  <http://www.w3.org/ns/shacl#select> """
+                        SELECT $this ?value
+                        WHERE {
+                          $this $PATH ?value .
+                          BIND (xsd:dateTime(NOW()) AS ?now)
+                          FILTER (?now > ?value)
+                        }
+                      """ .
+
+<http://example.org/Lab308MembershipCondition> a <https://aimas.cs.pub.ro/ont/cashmere#ContextDomainCondition>,
+    <http://www.w3.org/ns/shacl#NodeShape>;
+  <http://www.w3.org/ns/shacl#targetNode> <http://example.org/alexAgent>;
+  <http://www.w3.org/ns/shacl#property> _:node1i62t7ijhx13 .
+
+_:node1i62t7ijhx13 <http://www.w3.org/ns/shacl#path> <https://aimas.cs.pub.ro/ont/cashmere#memberIn>;
+  <http://www.w3.org/ns/shacl#hasValue> <http://example.org/environments/upb_hmas/ctxmgmt/domains/lab308Domain/group> .
